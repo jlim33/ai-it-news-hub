@@ -257,22 +257,23 @@ async function fetchFeed(feed: FeedSource): Promise<NewsArticle[]> {
       if (!item.title || !item.link) continue;
 
       const title = item.title.trim();
+      const rawItem = item as any;
       const snippet = sanitizeSnippet(
-        item.contentSnippet || item.summary || item.content || item["content:encoded"] || ""
+        rawItem.contentSnippet || rawItem.summary || rawItem.content || rawItem["content:encoded"] || ""
       );
       
-      const pubDateObj = item.pubDate || item.isoDate ? new Date(item.pubDate || item.isoDate!) : new Date();
+      const pubDateObj = rawItem.pubDate || rawItem.isoDate ? new Date(rawItem.pubDate || rawItem.isoDate!) : new Date();
       const pubDate = isNaN(pubDateObj.getTime()) ? new Date().toISOString() : pubDateObj.toISOString();
       const timestamp = isNaN(pubDateObj.getTime()) ? Date.now() : pubDateObj.getTime();
 
       // Extract image if available
       let imageUrl = "";
-      if (item.enclosure?.url && item.enclosure?.type?.startsWith("image/")) {
-        imageUrl = item.enclosure.url;
-      } else if (item.mediaContent?.$?.url) {
-        imageUrl = item.mediaContent.$.url;
-      } else if (item.mediaThumbnail?.$?.url) {
-        imageUrl = item.mediaThumbnail.$.url;
+      if (rawItem.enclosure?.url && (rawItem.enclosure?.type?.startsWith("image/") || typeof rawItem.enclosure?.url === "string")) {
+        imageUrl = rawItem.enclosure.url;
+      } else if (rawItem.mediaContent?.$?.url) {
+        imageUrl = rawItem.mediaContent.$.url;
+      } else if (rawItem.mediaThumbnail?.$?.url) {
+        imageUrl = rawItem.mediaThumbnail.$.url;
       }
 
       // Unique deterministic ID based on title + link
@@ -296,7 +297,7 @@ async function fetchFeed(feed: FeedSource): Promise<NewsArticle[]> {
         category,
         contentSnippet: snippet.slice(0, 400),
         fullContent: snippet,
-        author: item.creator || item.author || feed.name,
+        author: rawItem.creator || rawItem.author || feed.name,
         imageUrl: imageUrl || undefined,
         readTimeMinutes,
         aiSummary,
