@@ -23,8 +23,10 @@ const parser = new Parser({
   },
 });
 
-// Cache file path
-const CACHE_DIR = path.join(process.cwd(), ".cache");
+import os from "os";
+
+// Cache file path in OS temporary directory (fully compatible with Vercel serverless)
+const CACHE_DIR = path.join(os.tmpdir(), "ai-news-hub-cache");
 const CACHE_FILE = path.join(CACHE_DIR, "news-cache.json");
 const FEEDS_FILE = path.join(CACHE_DIR, "feeds-config.json");
 
@@ -37,12 +39,12 @@ const CACHE_TTL_MS = 5 * 60 * 1000; // 5 minutes cache TTL
  * Ensure the cache directory exists
  */
 function ensureCacheDir() {
-  if (!fs.existsSync(CACHE_DIR)) {
-    try {
+  try {
+    if (!fs.existsSync(CACHE_DIR)) {
       fs.mkdirSync(CACHE_DIR, { recursive: true });
-    } catch (e) {
-      console.warn("Failed to create cache dir:", e);
     }
+  } catch (e) {
+    // Non-fatal if disk is read-only
   }
 }
 
