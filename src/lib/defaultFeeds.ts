@@ -3,15 +3,6 @@ import { FeedSource } from "./types";
 export const DEFAULT_FEEDS: FeedSource[] = [
   // 1. 국내 주요 AI & 테크 미디어
   {
-    id: "geeknews-tech",
-    name: "긱뉴스 (GeekNews)",
-    url: "https://news.hada.io/rss/news",
-    category: "클라우드 & 개발",
-    enabled: true,
-    type: "rss",
-    icon: "Flame"
-  },
-  {
     id: "ai-times-kr",
     name: "AI타임스 (AI Times)",
     url: "https://www.aitimes.com/rss/allArticle.xml",
@@ -21,22 +12,13 @@ export const DEFAULT_FEEDS: FeedSource[] = [
     icon: "Sparkles"
   },
   {
-    id: "zdnet-korea",
-    name: "지디넷코리아 (ZDNet Korea)",
-    url: "https://zdnet.co.kr/feed/all/",
-    category: "빅테크 이슈",
+    id: "geeknews-tech",
+    name: "긱뉴스 (GeekNews)",
+    url: "https://news.hada.io/rss/news",
+    category: "클라우드 & 개발",
     enabled: true,
     type: "rss",
-    icon: "Globe"
-  },
-  {
-    id: "bloter-tech",
-    name: "블로터 (Bloter)",
-    url: "https://www.bloter.net/feed/allArticle.xml",
-    category: "빅테크 이슈",
-    enabled: true,
-    type: "rss",
-    icon: "Layers"
+    icon: "Flame"
   },
   {
     id: "yozm-it",
@@ -48,13 +30,40 @@ export const DEFAULT_FEEDS: FeedSource[] = [
     icon: "BookOpen"
   },
   {
-    id: "boannews-security",
-    name: "보안뉴스 (BoanNews)",
-    url: "https://www.boannews.com/media/news_rss.xml",
-    category: "사이버 보안",
+    id: "naver-d2",
+    name: "네이버 D2 (Naver Tech)",
+    url: "https://d2.naver.com/d2.atom",
+    category: "클라우드 & 개발",
+    enabled: true,
+    type: "atom",
+    icon: "Layers"
+  },
+  {
+    id: "kakao-tech",
+    name: "카카오 테크 (Kakao Tech)",
+    url: "https://tech.kakao.com/feed/",
+    category: "빅테크 이슈",
     enabled: true,
     type: "rss",
-    icon: "ShieldAlert"
+    icon: "Globe"
+  },
+  {
+    id: "toss-tech",
+    name: "토스 테크 (Toss Tech)",
+    url: "https://toss.tech/rss.xml",
+    category: "클라우드 & 개발",
+    enabled: true,
+    type: "rss",
+    icon: "Zap"
+  },
+  {
+    id: "woowa-tech",
+    name: "우아한형제들 기술블로그",
+    url: "https://techblog.woowahan.com/feed/",
+    category: "클라우드 & 개발",
+    enabled: true,
+    type: "rss",
+    icon: "Smile"
   },
 
   // 2. 글로벌 프론티어 AI & 리서치 (한글 AI 자동 요약 지원)
