@@ -8,7 +8,8 @@ import {
   Sparkles,
   Rss,
   Clock,
-  X
+  X,
+  Languages
 } from "lucide-react";
 import { ThemeToggle } from "./ThemeToggle";
 
