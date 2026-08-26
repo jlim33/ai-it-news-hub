@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import {
   MessageSquare,
   Send,
@@ -9,7 +9,9 @@ import {
   User,
   Sparkles,
   Smile,
-  ShieldCheck
+  ShieldCheck,
+  CheckCircle2,
+  AlertCircle
 } from "lucide-react";
 import { Comment } from "@/lib/types";
 import {
@@ -47,6 +49,20 @@ const PRESET_NICKNAMES_EN = [
   "ML Systems Engineer"
 ];
 
+const QUICK_STARTERS_EN = [
+  "🔥 Huge breakthrough for the industry!",
+  "💡 Really interesting technical architecture.",
+  "🚀 Great analysis, looking forward to real-world benchmarks.",
+  "🤔 Critical security implications to consider."
+];
+
+const QUICK_STARTERS_KO = [
+  "🔥 업계에 매우 중요한 변화네요!",
+  "💡 아키텍처 관점에서 흥미로운 시사점입니다.",
+  "🚀 훌륭한 분석입니다. 실제 벤치마크가 기대되네요.",
+  "🤔 보안 관점에서 주의 깊게 봐야 할 이슈입니다."
+];
+
 const AVATAR_GRADIENTS = [
   "from-blue-500 to-indigo-600",
   "from-purple-500 to-pink-600",
@@ -61,6 +77,9 @@ export function CommentsSection({ articleId, locale = "ko", onCommentCountChange
   const [nickname, setNickname] = useState("");
   const [content, setContent] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
+  const [successToast, setSuccessToast] = useState(false);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
   const isEn = locale === "en";
 
   useEffect(() => {
@@ -70,7 +89,14 @@ export function CommentsSection({ articleId, locale = "ko", onCommentCountChange
 
     const savedName = getSavedNickname();
     if (savedName) {
-      setNickname(savedName);
+      if (isEn && /[ㄱ-ㅎ|ㅏ-ㅣ|가-힣]/.test(savedName)) {
+        // If on English mode and saved nickname is Korean, convert to English persona
+        const randomEn = PRESET_NICKNAMES_EN[Math.floor(Math.random() * PRESET_NICKNAMES_EN.length)];
+        setNickname(randomEn);
+        saveNickname(randomEn);
+      } else {
+        setNickname(savedName);
+      }
     } else {
       const presets = isEn ? PRESET_NICKNAMES_EN : PRESET_NICKNAMES_KO;
       const randomPreset = presets[Math.floor(Math.random() * presets.length)];
@@ -78,9 +104,19 @@ export function CommentsSection({ articleId, locale = "ko", onCommentCountChange
     }
   }, [articleId, isEn]);
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!content.trim()) return;
+  const handleSubmit = (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
+    setErrorMessage("");
+
+    if (!content.trim()) {
+      setErrorMessage(
+        isEn
+          ? "Please type your comment in the text box below before posting!"
+          : "댓글을 등록하시려면 아래 텍스트 상자에 내용을 입력해주세요!"
+      );
+      textareaRef.current?.focus();
+      return;
+    }
 
     setIsSubmitting(true);
     const defaultAnonymous = isEn ? "Anonymous Reader" : "익명의 독자";
@@ -94,6 +130,9 @@ export function CommentsSection({ articleId, locale = "ko", onCommentCountChange
     setComments(updated);
     setContent("");
     setIsSubmitting(false);
+    setSuccessToast(true);
+    setTimeout(() => setSuccessToast(false), 2500);
+
     if (onCommentCountChange) onCommentCountChange(updated.length);
   };
 
@@ -111,6 +150,12 @@ export function CommentsSection({ articleId, locale = "ko", onCommentCountChange
     );
   };
 
+  const handleQuickStarter = (starterText: string) => {
+    setContent(starterText);
+    setErrorMessage("");
+    textareaRef.current?.focus();
+  };
+
   const formatCommentDate = (isoStr: string) => {
     try {
       if (isEn) {
@@ -122,11 +167,14 @@ export function CommentsSection({ articleId, locale = "ko", onCommentCountChange
     }
   };
 
+  const quickStarters = isEn ? QUICK_STARTERS_EN : QUICK_STARTERS_KO;
+  const presets = isEn ? PRESET_NICKNAMES_EN : PRESET_NICKNAMES_KO;
+
   return (
     <div className="pt-6 border-t border-slate-200/80 dark:border-slate-800">
       
       {/* Section Header */}
-      <div className="flex items-center justify-between gap-2 mb-5">
+      <div className="flex items-center justify-between gap-2 mb-4">
         <div className="flex items-center gap-2">
           <div className="p-1.5 rounded-lg bg-indigo-100 dark:bg-blue-500/20 text-indigo-700 dark:text-blue-400">
             <MessageSquare className="w-4 h-4" />
@@ -145,6 +193,27 @@ export function CommentsSection({ articleId, locale = "ko", onCommentCountChange
         </span>
       </div>
 
+      {/* Quick Handle Selection */}
+      <div className="mb-4 flex flex-wrap items-center gap-1.5">
+        <span className="text-[11px] text-slate-400 font-semibold mr-1">
+          {isEn ? "Quick Handle:" : "추천 닉네임:"}
+        </span>
+        {presets.slice(0, 4).map((p) => (
+          <button
+            key={p}
+            type="button"
+            onClick={() => setNickname(p)}
+            className={`px-2.5 py-1 rounded-xl text-[11px] font-bold border transition-all ${
+              nickname === p
+                ? "bg-indigo-600 text-white border-indigo-600 shadow-xs"
+                : "bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 border-slate-200 dark:border-slate-700 hover:border-indigo-400"
+            }`}
+          >
+            {p}
+          </button>
+        ))}
+      </div>
+
       {/* Comment Form */}
       <form onSubmit={handleSubmit} className="mb-6 space-y-3">
         <div className="flex items-center gap-2">
@@ -161,28 +230,69 @@ export function CommentsSection({ articleId, locale = "ko", onCommentCountChange
           />
         </div>
 
+        {/* Quick Starters */}
+        <div className="flex flex-wrap items-center gap-1.5">
+          <span className="text-[10px] text-slate-400 font-medium">
+            {isEn ? "💡 Quick ideas:" : "💡 빠른 입력:"}
+          </span>
+          {quickStarters.map((starter, i) => (
+            <button
+              key={i}
+              type="button"
+              onClick={() => handleQuickStarter(starter)}
+              className="text-[10px] px-2.5 py-1 rounded-lg bg-indigo-50/80 dark:bg-indigo-950/40 hover:bg-indigo-100 text-indigo-700 dark:text-indigo-300 border border-indigo-200/80 dark:border-indigo-800 transition-all font-medium text-left"
+            >
+              {starter}
+            </button>
+          ))}
+        </div>
+
         <div className="relative">
           <textarea
+            ref={textareaRef}
             rows={3}
             value={content}
-            onChange={(e) => setContent(e.target.value)}
+            onChange={(e) => {
+              setContent(e.target.value);
+              if (errorMessage) setErrorMessage("");
+            }}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) {
+                e.preventDefault();
+                handleSubmit();
+              }
+            }}
             placeholder={
               isEn
-                ? "Share your perspective, technical analysis, or insights on this story..."
-                : "이 기사에 대한 생각, 기술적 견해, 질문 등을 자유롭게 남겨보세요..."
+                ? "Type your perspective, technical analysis, or questions here (or click a quick idea above)..."
+                : "이 기사에 대한 생각, 기술적 견해, 질문 등을 직접 입력해보세요 (위의 빠른 입력 클릭 가능)..."
             }
             className="w-full p-3.5 rounded-2xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700/80 text-xs text-slate-900 dark:text-slate-100 placeholder-slate-400 outline-none focus:border-indigo-500 dark:focus:border-blue-500 focus:bg-white dark:focus:bg-slate-900 resize-none transition-all"
           />
 
+          {errorMessage && (
+            <div className="flex items-center gap-1.5 text-xs text-rose-600 dark:text-rose-400 py-1 font-medium">
+              <AlertCircle className="w-4 h-4 shrink-0" />
+              <span>{errorMessage}</span>
+            </div>
+          )}
+
+          {successToast && (
+            <div className="flex items-center gap-1.5 text-xs text-emerald-600 dark:text-emerald-400 py-1 font-medium animate-in fade-in duration-200">
+              <CheckCircle2 className="w-4 h-4 shrink-0" />
+              <span>{isEn ? "Comment posted successfully!" : "댓글이 성공적으로 등록되었습니다!"}</span>
+            </div>
+          )}
+
           <div className="flex items-center justify-between pt-1">
             <span className="text-[10px] text-slate-400">
-              {content.length} {isEn ? "chars" : "자"}
+              {content.length} {isEn ? "chars (Ctrl+Enter to post)" : "자 (Ctrl+Enter로 등록)"}
             </span>
 
             <button
               type="submit"
-              disabled={isSubmitting || !content.trim()}
-              className="px-4 py-2 rounded-xl bg-gradient-to-r from-indigo-600 to-blue-600 hover:from-indigo-500 hover:to-blue-500 text-white text-xs font-bold transition-all shadow-md shadow-indigo-500/20 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1.5"
+              disabled={isSubmitting}
+              className="px-4 py-2 rounded-xl bg-gradient-to-r from-indigo-600 to-blue-600 hover:from-indigo-500 hover:to-blue-500 text-white text-xs font-bold transition-all shadow-md shadow-indigo-500/20 active:scale-95 flex items-center gap-1.5 cursor-pointer"
             >
               <Send className="w-3.5 h-3.5" />
               <span>{isEn ? "Post Comment" : "댓글 등록"}</span>
@@ -196,7 +306,7 @@ export function CommentsSection({ articleId, locale = "ko", onCommentCountChange
         {comments.length === 0 ? (
           <div className="text-center py-8 rounded-2xl bg-slate-50/50 dark:bg-slate-950/20 border border-dashed border-slate-200 dark:border-slate-800 text-slate-400 text-xs font-medium">
             <Smile className="w-6 h-6 mx-auto mb-2 text-slate-400" />
-            <p>{isEn ? "No comments yet. Be the first to share your thoughts!" : "아직 작성된 댓글이 없습니다. 첫 번째 의견을 남겨보세요!"}</p>
+            <p>{isEn ? "No comments yet. Click one of the quick ideas above to post the first comment!" : "아직 작성된 댓글이 없습니다. 위의 빠른 입력을 눌러 첫 번째 의견을 남겨보세요!"}</p>
           </div>
         ) : (
           comments.map((comment) => (
