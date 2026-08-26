@@ -15,7 +15,7 @@ export async function GET(request: NextRequest) {
     const offset = parseInt(searchParams.get("offset") || "0", 10);
 
     const result = await getNewsArticles({
-      category: category || "All",
+      category: category || "전체",
       search,
       source,
       sortBy: sortBy || "latest",

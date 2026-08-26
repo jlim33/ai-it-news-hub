@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback, useRef } from "react";
 import { NewsArticle, Category } from "@/lib/types";
 import { getAutoRefreshInterval } from "@/lib/storage";
 
-export function useNews(initialCategory: Category = "All") {
+export function useNews(initialCategory: Category = "전체") {
   const [articles, setArticles] = useState<NewsArticle[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [isSyncing, setIsSyncing] = useState<boolean>(false);
@@ -23,7 +23,7 @@ export function useNews(initialCategory: Category = "All") {
       setLoading(true);
       setError(null);
       const params = new URLSearchParams();
-      if (cat !== "All") params.append("category", cat);
+      if (cat !== "전체") params.append("category", cat);
       if (search) params.append("search", search);
       params.append("sortBy", sort);
       params.append("limit", "100");

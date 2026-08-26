@@ -1,19 +1,35 @@
 export type Category =
-  | "All"
-  | "Generative AI"
-  | "LLMs & Research"
-  | "Hardware & Chips"
-  | "Cybersecurity"
-  | "Cloud & DevOps"
-  | "Open Source"
-  | "Big Tech";
+  | "전체"
+  | "생성형 AI"
+  | "LLM & 연구"
+  | "반도체 & 칩"
+  | "사이버 보안"
+  | "클라우드 & 개발"
+  | "오픈소스"
+  | "빅테크 이슈";
 
 export interface AISummary {
   tldr: string[];
   whyItMatters: string;
-  impactScore: "Critical" | "High" | "Medium" | "Low";
-  sentiment: "Positive" | "Neutral" | "Cautious" | "Disruptive";
+  impactScore: "매우 중요" | "높음" | "보통" | "일반";
+  sentiment: "긍정적" | "중립적" | "신중함" | "파괴적 혁신";
   keyEntities: string[];
+}
+
+export interface Comment {
+  id: string;
+  articleId: string;
+  author: string;
+  avatarColor: string;
+  content: string;
+  createdAt: string; // ISO string
+  likes: number;
+}
+
+export interface ReactionState {
+  userVote: "like" | "dislike" | null;
+  likes: number;
+  dislikes: number;
 }
 
 export interface NewsArticle {
@@ -31,7 +47,9 @@ export interface NewsArticle {
   imageUrl?: string;
   readTimeMinutes: number;
   aiSummary?: AISummary;
-  score?: number; // upvotes / popularity if available (e.g., Hacker News)
+  score?: number;
+  likes?: number;
+  dislikes?: number;
   commentsCount?: number;
   commentsUrl?: string;
   tags: string[];
@@ -45,7 +63,7 @@ export interface FeedSource {
   enabled: boolean;
   isCustom?: boolean;
   icon?: string;
-  type: "rss" | "atom" | "json" | "hackernews";
+  type: "rss" | "atom" | "json";
   lastFetched?: string;
   status?: "ok" | "error" | "pending";
 }
@@ -55,12 +73,4 @@ export interface SyncResponse {
   total: number;
   updatedAt: string;
   sourcesStatus: { [feedId: string]: { count: number; error?: string } };
-}
-
-export interface FilterOptions {
-  category: Category;
-  searchQuery: string;
-  source?: string;
-  sortBy: "latest" | "popular" | "readTime";
-  timeWindow?: "all" | "24h" | "48h" | "7d";
 }

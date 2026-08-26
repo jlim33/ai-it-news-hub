@@ -3,7 +3,7 @@
 import React, { useState } from "react";
 import { NewsArticle } from "@/lib/types";
 import { NewsCard } from "./NewsCard";
-import { RotateCw, SearchX, Sparkles } from "lucide-react";
+import { SearchX } from "lucide-react";
 
 interface NewsGridProps {
   articles: NewsArticle[];
@@ -35,20 +35,20 @@ export function NewsGrid({
           {[...Array(6)].map((_, i) => (
             <div
               key={i}
-              className="rounded-3xl p-6 bg-slate-900/40 border border-slate-800 animate-pulse flex flex-col justify-between h-72"
+              className="rounded-3xl p-6 bg-white dark:bg-slate-900/40 border border-slate-200 dark:border-slate-800 animate-pulse flex flex-col justify-between h-72 shadow-sm"
             >
               <div>
                 <div className="flex items-center justify-between mb-4">
-                  <div className="w-20 h-5 bg-slate-800 rounded-lg"></div>
-                  <div className="w-16 h-4 bg-slate-800 rounded"></div>
+                  <div className="w-20 h-5 bg-slate-200 dark:bg-slate-800 rounded-lg"></div>
+                  <div className="w-16 h-4 bg-slate-200 dark:bg-slate-800 rounded"></div>
                 </div>
-                <div className="w-full h-6 bg-slate-800 rounded mb-3"></div>
-                <div className="w-3/4 h-6 bg-slate-800 rounded mb-4"></div>
-                <div className="w-full h-12 bg-slate-800/60 rounded"></div>
+                <div className="w-full h-6 bg-slate-200 dark:bg-slate-800 rounded mb-3"></div>
+                <div className="w-3/4 h-6 bg-slate-200 dark:bg-slate-800 rounded mb-4"></div>
+                <div className="w-full h-12 bg-slate-100 dark:bg-slate-800/60 rounded"></div>
               </div>
-              <div className="pt-4 border-t border-slate-800/60 flex items-center justify-between">
-                <div className="w-24 h-7 bg-slate-800 rounded-xl"></div>
-                <div className="w-16 h-7 bg-slate-800 rounded-xl"></div>
+              <div className="pt-4 border-t border-slate-100 dark:border-slate-800/60 flex items-center justify-between">
+                <div className="w-24 h-7 bg-slate-200 dark:bg-slate-800 rounded-xl"></div>
+                <div className="w-16 h-7 bg-slate-200 dark:bg-slate-800 rounded-xl"></div>
               </div>
             </div>
           ))}
@@ -60,18 +60,20 @@ export function NewsGrid({
   if (articles.length === 0) {
     return (
       <div className="w-full py-16 flex flex-col items-center justify-center text-center px-4">
-        <div className="w-16 h-16 rounded-2xl bg-slate-800/60 flex items-center justify-center text-slate-400 mb-4 border border-slate-700">
-          <SearchX className="w-8 h-8 text-slate-400" />
+        <div className="w-16 h-16 rounded-3xl bg-indigo-50 dark:bg-slate-800/60 flex items-center justify-center text-indigo-500 mb-4 border border-indigo-100 dark:border-slate-700 shadow-sm">
+          <SearchX className="w-8 h-8" />
         </div>
-        <h3 className="text-xl font-bold text-slate-200 mb-2">No news items found</h3>
-        <p className="text-slate-400 text-sm max-w-md mb-6">
-          No articles match your active search or category filters. Try adjusting your query or resetting filters.
+        <h3 className="text-xl font-bold text-slate-800 dark:text-slate-200 mb-2">
+          검색된 뉴스가 없습니다
+        </h3>
+        <p className="text-slate-500 dark:text-slate-400 text-xs sm:text-sm max-w-md mb-6">
+          선택하신 카테고리나 검색어에 일치하는 기사가 없습니다. 필터를 초기화해 보세요.
         </p>
         <button
           onClick={onResetFilters}
-          className="px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-xs font-semibold shadow-md transition-all"
+          className="px-5 py-2.5 rounded-2xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold shadow-md transition-all"
         >
-          Reset All Filters
+          모든 필터 초기화
         </button>
       </div>
     );
@@ -107,9 +109,9 @@ export function NewsGrid({
         <div className="w-full flex justify-center mt-10">
           <button
             onClick={() => setDisplayCount((prev) => prev + 24)}
-            className="px-6 py-3 rounded-2xl bg-slate-900 border border-slate-700/80 hover:border-blue-500/60 text-slate-200 hover:text-white text-xs font-bold transition-all shadow-md flex items-center gap-2"
+            className="px-6 py-3 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 hover:border-indigo-500 text-slate-700 dark:text-slate-200 text-xs font-bold transition-all shadow-sm hover:shadow-md flex items-center gap-2"
           >
-            <span>Load More Articles ({articles.length - displayCount} remaining)</span>
+            <span>더 많은 기사 불러오기 ({articles.length - displayCount}개 남음)</span>
           </button>
         </div>
       )}

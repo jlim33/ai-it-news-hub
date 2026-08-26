@@ -2,78 +2,71 @@
 @tailwind components;
 @tailwind utilities;
 
-:root {
-  --background: #030712;
-  --foreground: #f9fafb;
+@layer base {
+  :root {
+    --background: #f8fafc;
+    --foreground: #0f172a;
+    --card-bg: #ffffff;
+    --card-border: rgba(226, 232, 240, 0.8);
+  }
+
+  html.dark {
+    --background: #030712;
+    --foreground: #f9fafb;
+    --card-bg: #0f172a;
+    --card-border: rgba(30, 41, 59, 0.8);
+  }
+
+  html.cyber {
+    --background: #050510;
+    --foreground: #00f0ff;
+    --card-bg: #09091f;
+    --card-border: rgba(168, 85, 247, 0.3);
+  }
 }
 
-/* Light Theme overrides */
-html.light {
-  --background: #f8fafc;
-  --foreground: #0f172a;
+body {
+  background-color: var(--background);
+  color: var(--foreground);
+  font-family: -apple-system, BlinkMacSystemFont, "Pretendard", "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
-html.light body {
+/* Luxury Light Ambient Mesh Background (Default) */
+html:not(.dark):not(.cyber) body {
   background-color: #f8fafc;
-  color: #0f172a;
+  background-image: 
+    radial-gradient(at 0% 0%, rgba(99, 102, 241, 0.06) 0px, transparent 50%),
+    radial-gradient(at 100% 0%, rgba(236, 72, 153, 0.05) 0px, transparent 50%),
+    radial-gradient(at 50% 100%, rgba(59, 130, 246, 0.05) 0px, transparent 50%);
+  background-attachment: fixed;
 }
 
-html.light .bg-slate-950,
-html.light .bg-slate-950\/80,
-html.light .bg-slate-950\/60,
-html.light .bg-slate-950\/50,
-html.light .bg-slate-950\/40 {
-  background-color: rgba(241, 245, 249, 0.9);
+/* Luxury Light Card & Element Styles */
+html:not(.dark):not(.cyber) .luxury-card {
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(16px);
+  border: 1px solid rgba(226, 232, 240, 0.9);
+  box-shadow: 0 4px 20px -2px rgba(148, 163, 184, 0.12), 0 2px 6px -1px rgba(148, 163, 184, 0.08);
 }
 
-html.light .bg-slate-900,
-html.light .bg-slate-900\/90,
-html.light .bg-slate-900\/80,
-html.light .bg-slate-900\/70,
-html.light .bg-slate-900\/60,
-html.light .bg-slate-900\/40 {
-  background-color: #ffffff;
+html:not(.dark):not(.cyber) .luxury-card:hover {
+  border-color: rgba(99, 102, 241, 0.4);
+  box-shadow: 0 20px 35px -5px rgba(99, 102, 241, 0.12), 0 8px 16px -3px rgba(99, 102, 241, 0.06);
 }
 
-html.light .bg-slate-850,
-html.light .bg-slate-800,
-html.light .bg-slate-800\/60 {
-  background-color: #f1f5f9;
+/* Dark Mode Overrides */
+html.dark .luxury-card {
+  background: rgba(15, 23, 42, 0.85);
+  backdrop-filter: blur(16px);
+  border: 1px solid rgba(30, 41, 59, 0.9);
+  box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.4);
 }
 
-html.light .border-slate-800,
-html.light .border-slate-800\/80,
-html.light .border-slate-800\/60,
-html.light .border-slate-700,
-html.light .border-slate-700\/80,
-html.light .border-slate-700\/60 {
-  border-color: #e2e8f0;
-}
-
-html.light .text-slate-100,
-html.light .text-slate-200,
-html.light .text-white {
-  color: #0f172a;
-}
-
-html.light .text-slate-300,
-html.light .text-slate-400 {
-  color: #475569;
-}
-
-/* Cyber Theme overrides */
-html.cyber {
-  --background: #050510;
-  --foreground: #00f0ff;
-}
-
-html.cyber body {
-  background: radial-gradient(circle at 50% 0%, #150030 0%, #050510 60%);
-}
-
-html.cyber .border-slate-800,
-html.cyber .border-slate-700 {
-  border-color: rgba(168, 85, 247, 0.25);
+html.dark .luxury-card:hover {
+  border-color: rgba(99, 102, 241, 0.5);
+  box-shadow: 0 20px 35px -5px rgba(59, 130, 246, 0.15);
 }
 
 /* Custom Scrollbars */
@@ -87,15 +80,14 @@ html.cyber .border-slate-700 {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: rgba(100, 116, 139, 0.4);
+  background: rgba(148, 163, 184, 0.4);
   border-radius: 9999px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(100, 116, 139, 0.7);
+  background: rgba(99, 102, 241, 0.6);
 }
 
-/* Hide scrollbar utility */
 .no-scrollbar::-webkit-scrollbar {
   display: none;
 }

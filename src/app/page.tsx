@@ -15,7 +15,7 @@ import { useNews } from "@/hooks/useNews";
 import { useBookmarks } from "@/hooks/useBookmarks";
 import { useSpeech } from "@/hooks/useSpeech";
 import { NewsArticle } from "@/lib/types";
-import { ArrowUp, Sparkles, Rss, Layers, Zap } from "lucide-react";
+import { ArrowUp, Sparkles, Rss } from "lucide-react";
 
 export default function Home() {
   const {
@@ -35,7 +35,7 @@ export default function Home() {
     updateRefreshInterval,
     syncNow,
     refetch,
-  } = useNews("All");
+  } = useNews("전체");
 
   const { bookmarks, toggleBookmark, isBookmarked } = useBookmarks();
   const { isPlaying, isPaused, speak, pause, resume, stop } = useSpeech();
@@ -66,7 +66,7 @@ export default function Home() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col justify-between bg-slate-950 text-slate-100">
+    <div className="min-h-screen flex flex-col justify-between transition-colors duration-300">
       
       {/* Top Fixed Header */}
       <Header
@@ -95,19 +95,19 @@ export default function Home() {
         
         {/* Error notification banner if any */}
         {error && (
-          <div className="mb-6 p-4 rounded-2xl bg-rose-500/10 border border-rose-500/20 text-rose-300 text-xs flex items-center justify-between">
+          <div className="mb-6 p-4 rounded-2xl bg-rose-50 border border-rose-200 text-rose-700 text-xs flex items-center justify-between font-medium">
             <span>{error}</span>
             <button
               onClick={() => syncNow()}
-              className="px-3 py-1 rounded-lg bg-rose-600 hover:bg-rose-500 text-white font-bold"
+              className="px-3 py-1 rounded-xl bg-rose-600 hover:bg-rose-500 text-white font-bold"
             >
-              Retry Sync
+              다시 시도
             </button>
           </div>
         )}
 
-        {/* Featured Hero Stories (Visible when on 'All' category and no search active) */}
-        {category === "All" && !searchQuery && articles.length > 0 && (
+        {/* Featured Hero Stories */}
+        {category === "전체" && !searchQuery && articles.length > 0 && (
           <HeroFeatured
             articles={articles}
             onSelectArticle={handleSelectArticle}
@@ -126,25 +126,25 @@ export default function Home() {
         />
 
         {/* Search Results / Category Indicator Header */}
-        {(searchQuery || category !== "All") && (
+        {(searchQuery || category !== "전체") && (
           <div className="pt-6 pb-2 flex items-center justify-between">
             <div>
-              <h2 className="text-xl font-bold text-white flex items-center gap-2">
-                <span>{searchQuery ? `Search: "${searchQuery}"` : category}</span>
-                <span className="text-xs px-2.5 py-0.5 rounded-full bg-slate-800 text-slate-400 font-normal">
-                  {articles.length} articles
+              <h2 className="text-xl font-extrabold text-slate-900 dark:text-white flex items-center gap-2">
+                <span>{searchQuery ? `검색 결과: "${searchQuery}"` : category}</span>
+                <span className="text-xs px-2.5 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 font-semibold">
+                  총 {articles.length}건
                 </span>
               </h2>
             </div>
-            {(searchQuery || category !== "All") && (
+            {(searchQuery || category !== "전체") && (
               <button
                 onClick={() => {
-                  setCategory("All");
+                  setCategory("전체");
                   setSearchQuery("");
                 }}
-                className="text-xs text-blue-400 hover:text-blue-300 underline font-medium"
+                className="text-xs text-indigo-600 hover:text-indigo-700 underline font-bold"
               >
-                Clear all filters
+                전체 보기로 돌아가기
               </button>
             )}
           </div>
@@ -160,40 +160,40 @@ export default function Home() {
           onSelectArticle={handleSelectArticle}
           onPlayAudio={speak}
           onResetFilters={() => {
-            setCategory("All");
+            setCategory("전체");
             setSearchQuery("");
           }}
         />
       </main>
 
       {/* Footer */}
-      <footer className="border-t border-slate-800/80 bg-slate-950/80 py-8 px-4 sm:px-6 lg:px-8 mt-12">
-        <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-slate-400">
+      <footer className="border-t border-slate-200/80 dark:border-slate-800/80 bg-white/80 dark:bg-slate-950/80 py-8 px-4 sm:px-6 lg:px-8 mt-12 backdrop-blur-md">
+        <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-slate-500 dark:text-slate-400 font-medium">
           <div className="flex items-center gap-2">
-            <span className="font-extrabold text-slate-200">AI & IT News Pulse</span>
+            <span className="font-extrabold text-slate-900 dark:text-slate-200 text-sm">⚡ AI & IT 펄스</span>
             <span>•</span>
-            <span>Automated RSS & AI-Powered Intelligence</span>
+            <span>국내외 실시간 기술 뉴스 자동 수집 및 AI 인텔리전스</span>
           </div>
 
           <div className="flex items-center gap-4">
             <button
               onClick={() => setIsFeedManagerOpen(true)}
-              className="hover:text-slate-200 flex items-center gap-1 transition-colors"
+              className="hover:text-indigo-600 dark:hover:text-slate-200 flex items-center gap-1 transition-colors font-semibold"
             >
               <Rss className="w-3.5 h-3.5" />
-              Manage Feeds
+              피드 관리
             </button>
             <button
               onClick={() => setIsBriefingOpen(true)}
-              className="hover:text-slate-200 flex items-center gap-1 transition-colors"
+              className="hover:text-indigo-600 dark:hover:text-slate-200 flex items-center gap-1 transition-colors font-semibold"
             >
               <Sparkles className="w-3.5 h-3.5" />
-              Daily Briefing
+              일일 브리핑
             </button>
             <button
               onClick={scrollToTop}
-              className="p-2 rounded-xl bg-slate-900 border border-slate-800 hover:border-slate-700 text-slate-300 hover:text-white transition-all ml-2"
-              title="Scroll to top"
+              className="p-2 rounded-2xl bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 hover:border-indigo-400 text-slate-600 dark:text-slate-300 hover:text-indigo-600 transition-all ml-2 shadow-xs"
+              title="맨 위로 가기"
             >
               <ArrowUp className="w-4 h-4" />
             </button>

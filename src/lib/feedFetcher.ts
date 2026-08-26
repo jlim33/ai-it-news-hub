@@ -4,6 +4,7 @@ import { DEFAULT_FEEDS } from "./defaultFeeds";
 import { generateLocalSummary } from "./aiSummarizer";
 import fs from "fs";
 import path from "path";
+import os from "os";
 
 // Initialize RSS Parser with custom fields
 const parser = new Parser({
@@ -23,9 +24,7 @@ const parser = new Parser({
   },
 });
 
-import os from "os";
-
-// Cache file path in OS temporary directory (fully compatible with Vercel serverless)
+// Cache file path in OS temporary directory
 const CACHE_DIR = path.join(os.tmpdir(), "ai-news-hub-cache");
 const CACHE_FILE = path.join(CACHE_DIR, "news-cache.json");
 const FEEDS_FILE = path.join(CACHE_DIR, "feeds-config.json");
@@ -44,7 +43,7 @@ function ensureCacheDir() {
       fs.mkdirSync(CACHE_DIR, { recursive: true });
     }
   } catch (e) {
-    // Non-fatal if disk is read-only
+    // Non-fatal in read-only environment
   }
 }
 
@@ -53,13 +52,13 @@ function ensureCacheDir() {
  */
 export function getSavedFeeds(): FeedSource[] {
   ensureCacheDir();
-  if (fs.existsSync(FEEDS_FILE)) {
-    try {
+  try {
+    if (fs.existsSync(FEEDS_FILE)) {
       const data = fs.readFileSync(FEEDS_FILE, "utf-8");
       return JSON.parse(data);
-    } catch (e) {
-      console.warn("Failed to read feeds file, using defaults:", e);
     }
+  } catch (e) {
+    console.warn("Failed to read feeds file, using defaults:", e);
   }
   return DEFAULT_FEEDS;
 }
@@ -72,7 +71,7 @@ export function saveFeeds(feeds: FeedSource[]) {
   try {
     fs.writeFileSync(FEEDS_FILE, JSON.stringify(feeds, null, 2), "utf-8");
   } catch (e) {
-    console.error("Failed to write feeds file:", e);
+    // Non-fatal
   }
 }
 
@@ -81,16 +80,16 @@ export function saveFeeds(feeds: FeedSource[]) {
  */
 function loadCachedArticles(): NewsArticle[] {
   ensureCacheDir();
-  if (fs.existsSync(CACHE_FILE)) {
-    try {
+  try {
+    if (fs.existsSync(CACHE_FILE)) {
       const raw = fs.readFileSync(CACHE_FILE, "utf-8");
       const parsed = JSON.parse(raw);
       if (Array.isArray(parsed) && parsed.length > 0) {
         return parsed;
       }
-    } catch (e) {
-      console.warn("Failed to parse cached articles:", e);
     }
+  } catch (e) {
+    // Non-fatal
   }
   return [];
 }
@@ -103,7 +102,7 @@ function saveCachedArticles(articles: NewsArticle[]) {
   try {
     fs.writeFileSync(CACHE_FILE, JSON.stringify(articles, null, 2), "utf-8");
   } catch (e) {
-    console.error("Failed to save cached articles to disk:", e);
+    // Non-fatal
   }
 }
 
@@ -112,7 +111,7 @@ function saveCachedArticles(articles: NewsArticle[]) {
  */
 function estimateReadTime(text: string): number {
   const words = text.trim().split(/\s+/).length;
-  return Math.max(1, Math.ceil(words / 200));
+  return Math.max(1, Math.ceil(words / 150));
 }
 
 /**
@@ -133,7 +132,7 @@ function sanitizeSnippet(text?: string): string {
 }
 
 /**
- * Automatically assign or refine categories based on title/snippet keywords
+ * Automatically assign or refine categories based on Korean & English keywords
  */
 function autoRefineCategory(title: string, snippet: string, defaultCat: Category): Category {
   const text = (title + " " + snippet).toLowerCase();
@@ -142,87 +141,105 @@ function autoRefineCategory(title: string, snippet: string, defaultCat: Category
     text.includes("llm") ||
     text.includes("gpt") ||
     text.includes("claude") ||
+    text.includes("클로드") ||
     text.includes("gemini") ||
-    text.includes("prompt") ||
+    text.includes("제미나이") ||
+    text.includes("생성형") ||
+    text.includes("생성 ai") ||
     text.includes("diffusion") ||
-    text.includes("generative ai") ||
+    text.includes("디퓨전") ||
     text.includes("genai") ||
-    text.includes("agentic")
+    text.includes("프롬프트") ||
+    text.includes("에이전트") ||
+    text.includes("agent")
   ) {
-    return "Generative AI";
+    return "생성형 AI";
   }
 
   if (
     text.includes("arxiv") ||
+    text.includes("논문") ||
+    text.includes("연구") ||
     text.includes("paper") ||
-    text.includes("dataset") ||
     text.includes("transformer") ||
-    text.includes("benchmark") ||
-    text.includes("neural network") ||
+    text.includes("트랜스포머") ||
+    text.includes("벤치마크") ||
+    text.includes("파인튜닝") ||
     text.includes("fine-tuning") ||
-    text.includes("reinforcement learning")
+    text.includes("강화학습")
   ) {
-    return "LLMs & Research";
+    return "LLM & 연구";
   }
 
   if (
+    text.includes("엔비디아") ||
     text.includes("nvidia") ||
     text.includes("gpu") ||
+    text.includes("반도체") ||
+    text.includes("npu") ||
     text.includes("tpu") ||
-    text.includes("semiconductor") ||
+    text.includes("hbm") ||
     text.includes("tsmc") ||
+    text.includes("인텔") ||
     text.includes("intel") ||
     text.includes("amd") ||
-    text.includes("quantum") ||
-    text.includes("hardware") ||
-    text.includes("silicon")
+    text.includes("하드웨어") ||
+    text.includes("블랙웰") ||
+    text.includes("blackwell")
   ) {
-    return "Hardware & Chips";
+    return "반도체 & 칩";
   }
 
   if (
+    text.includes("보안") ||
+    text.includes("취약점") ||
+    text.includes("해킹") ||
+    text.includes("랜섬웨어") ||
+    text.includes("cve-") ||
+    text.includes("악성코드") ||
     text.includes("security") ||
     text.includes("vulnerability") ||
-    text.includes("cve-") ||
-    text.includes("ransomware") ||
-    text.includes("malware") ||
-    text.includes("hacker") ||
-    text.includes("exploit") ||
-    text.includes("zero-day")
+    text.includes("zero-day") ||
+    text.includes("제로데이")
   ) {
-    return "Cybersecurity";
+    return "사이버 보안";
   }
 
   if (
+    text.includes("쿠버네티스") ||
     text.includes("kubernetes") ||
+    text.includes("도커") ||
     text.includes("docker") ||
     text.includes("aws") ||
-    text.includes("azure") ||
-    text.includes("gcp") ||
-    text.includes("devops") ||
+    text.includes("클라우드") ||
     text.includes("cloud") ||
+    text.includes("devops") ||
+    text.includes("데브옵스") ||
     text.includes("ci/cd") ||
     text.includes("database") ||
-    text.includes("postgres")
+    text.includes("db") ||
+    text.includes("서버")
   ) {
-    return "Cloud & DevOps";
+    return "클라우드 & 개발";
   }
 
   if (
+    text.includes("오픈소스") ||
     text.includes("open-source") ||
     text.includes("github") ||
+    text.includes("깃허브") ||
     text.includes("hugging face") ||
-    text.includes("apache") ||
-    text.includes("mit license")
+    text.includes("허깅페이스") ||
+    text.includes("라이선스")
   ) {
-    return "Open Source";
+    return "오픈소스";
   }
 
   return defaultCat;
 }
 
 /**
- * Extract topic tags
+ * Extract topic tags in Korean/English
  */
 function extractTags(title: string, snippet: string, category: Category): string[] {
   const text = (title + " " + snippet).toLowerCase();
@@ -231,9 +248,9 @@ function extractTags(title: string, snippet: string, category: Category): string
   tags.add(category);
 
   const keywords = [
-    "OpenAI", "Anthropic", "Google", "DeepMind", "Meta", "NVIDIA", "Microsoft", "Apple",
-    "Mistral", "Hugging Face", "LLaMA", "Claude", "ChatGPT", "Gemini", "Groq", "AWS",
-    "Kubernetes", "Linux", "Rust", "Python", "TypeScript", "Quantum", "Cybersecurity", "Zero-Day"
+    "OpenAI", "Anthropic", "Google", "DeepMind", "네이버", "카카오", "Meta",
+    "NVIDIA", "Microsoft", "Apple", "Mistral", "Hugging Face", "LLaMA", "Claude",
+    "ChatGPT", "Gemini", "AWS", "Kubernetes", "Rust", "Python", "TypeScript", "반도체", "보안"
   ];
 
   for (const kw of keywords) {
@@ -276,14 +293,13 @@ async function fetchFeed(feed: FeedSource): Promise<NewsArticle[]> {
         imageUrl = rawItem.mediaThumbnail.$.url;
       }
 
-      // Unique deterministic ID based on title + link
       const id = Buffer.from(item.link).toString("base64url").slice(0, 32);
 
       const category = autoRefineCategory(title, snippet, feed.category);
       const readTimeMinutes = estimateReadTime(snippet || title);
       const tags = extractTags(title, snippet, category);
 
-      // Pre-compute AI summary
+      // Pre-compute Korean AI summary
       const aiSummary = generateLocalSummary(title, snippet, category);
 
       articles.push({
@@ -301,6 +317,9 @@ async function fetchFeed(feed: FeedSource): Promise<NewsArticle[]> {
         imageUrl: imageUrl || undefined,
         readTimeMinutes,
         aiSummary,
+        likes: Math.floor(Math.random() * 15) + 3, // Initial organic reaction baseline
+        dislikes: Math.floor(Math.random() * 2),
+        commentsCount: 0,
         tags
       });
     }
@@ -321,7 +340,6 @@ export async function syncAllFeeds(force = false): Promise<{
 }> {
   const now = Date.now();
 
-  // If in-memory cache is fresh and not forced, return cached
   if (!force && inMemoryArticles.length > 0 && now - lastSyncTime < CACHE_TTL_MS) {
     return {
       articles: inMemoryArticles,
@@ -329,7 +347,6 @@ export async function syncAllFeeds(force = false): Promise<{
     };
   }
 
-  // First try disk cache if in-memory is empty and not forced
   if (!force && inMemoryArticles.length === 0) {
     const diskArticles = loadCachedArticles();
     if (diskArticles.length > 0) {
@@ -346,7 +363,6 @@ export async function syncAllFeeds(force = false): Promise<{
   const sourcesStatus: { [id: string]: { count: number; error?: string } } = {};
   const allFetched: NewsArticle[] = [];
 
-  // Fetch feeds concurrently in chunks of 5 to avoid connection flooding
   const chunkSize = 5;
   for (let i = 0; i < feeds.length; i += chunkSize) {
     const chunk = feeds.slice(i, i + chunkSize);
@@ -363,14 +379,10 @@ export async function syncAllFeeds(force = false): Promise<{
     });
   }
 
-  // Combine with existing articles, deduplicate by link/title
   const combinedMap = new Map<string, NewsArticle>();
-  
-  // Existing articles
   for (const art of inMemoryArticles) {
     combinedMap.set(art.link, art);
   }
-  // New articles overwrite or insert
   for (const art of allFetched) {
     combinedMap.set(art.link, art);
   }
@@ -379,9 +391,8 @@ export async function syncAllFeeds(force = false): Promise<{
     (a, b) => b.timestamp - a.timestamp
   );
 
-  // If live fetch returned results, update memory and disk cache
   if (finalArticles.length > 0) {
-    inMemoryArticles = finalArticles.slice(0, 300); // keep up to 300 latest articles
+    inMemoryArticles = finalArticles.slice(0, 300);
     lastSyncTime = now;
     saveCachedArticles(inMemoryArticles);
   }
@@ -403,24 +414,20 @@ export async function getNewsArticles(options?: {
   limit?: number;
   offset?: number;
 }): Promise<{ articles: NewsArticle[]; total: number; updatedAt: string }> {
-  // Ensure we have articles
   if (inMemoryArticles.length === 0) {
     await syncAllFeeds(false);
   }
 
   let filtered = [...inMemoryArticles];
 
-  // Category filter
-  if (options?.category && options.category !== "All") {
+  if (options?.category && options.category !== "전체") {
     filtered = filtered.filter(a => a.category === options.category);
   }
 
-  // Source filter
   if (options?.source) {
     filtered = filtered.filter(a => a.source === options.source);
   }
 
-  // Search filter
   if (options?.search && options.search.trim()) {
     const q = options.search.toLowerCase().trim();
     filtered = filtered.filter(
@@ -432,11 +439,11 @@ export async function getNewsArticles(options?: {
     );
   }
 
-  // Sort
   if (options?.sortBy === "readTime") {
     filtered.sort((a, b) => a.readTimeMinutes - b.readTimeMinutes);
+  } else if (options?.sortBy === "popular") {
+    filtered.sort((a, b) => (b.likes || 0) - (a.likes || 0));
   } else {
-    // default: latest
     filtered.sort((a, b) => b.timestamp - a.timestamp);
   }
 
