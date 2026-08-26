@@ -1,7 +1,7 @@
 import { FeedSource } from "./types";
 
 export const DEFAULT_FEEDS: FeedSource[] = [
-  // 1. 국내 주요 AI & 테크 미디어
+  // 1. 국내 주요 AI & 테크 미디어 (Korean Feeds)
   {
     id: "ai-times-kr",
     name: "AI타임스 (AI Times)",
@@ -9,6 +9,7 @@ export const DEFAULT_FEEDS: FeedSource[] = [
     category: "생성형 AI",
     enabled: true,
     type: "rss",
+    lang: "ko",
     icon: "Sparkles"
   },
   {
@@ -18,6 +19,7 @@ export const DEFAULT_FEEDS: FeedSource[] = [
     category: "클라우드 & 개발",
     enabled: true,
     type: "rss",
+    lang: "ko",
     icon: "Flame"
   },
   {
@@ -27,6 +29,7 @@ export const DEFAULT_FEEDS: FeedSource[] = [
     category: "클라우드 & 개발",
     enabled: true,
     type: "rss",
+    lang: "ko",
     icon: "BookOpen"
   },
   {
@@ -36,6 +39,7 @@ export const DEFAULT_FEEDS: FeedSource[] = [
     category: "클라우드 & 개발",
     enabled: true,
     type: "atom",
+    lang: "ko",
     icon: "Layers"
   },
   {
@@ -45,6 +49,7 @@ export const DEFAULT_FEEDS: FeedSource[] = [
     category: "빅테크 이슈",
     enabled: true,
     type: "rss",
+    lang: "ko",
     icon: "Globe"
   },
   {
@@ -54,6 +59,7 @@ export const DEFAULT_FEEDS: FeedSource[] = [
     category: "클라우드 & 개발",
     enabled: true,
     type: "rss",
+    lang: "ko",
     icon: "Zap"
   },
   {
@@ -63,71 +69,139 @@ export const DEFAULT_FEEDS: FeedSource[] = [
     category: "클라우드 & 개발",
     enabled: true,
     type: "rss",
+    lang: "ko",
     icon: "Smile"
   },
 
-  // 2. 글로벌 프론티어 AI & 리서치 (한글 AI 자동 요약 지원)
+  // 2. 글로벌 프론티어 AI & 리서치 (Global English Feeds)
   {
     id: "arxiv-ai",
     name: "arXiv AI Research",
     url: "https://rss.arxiv.org/rss/cs.AI",
-    category: "LLM & 연구",
+    category: "LLMs & Research",
     enabled: true,
     type: "rss",
+    lang: "en",
     icon: "GraduationCap"
   },
   {
-    id: "techcrunch-ai",
-    name: "TechCrunch AI",
-    url: "https://techcrunch.com/category/artificial-intelligence/feed/",
-    category: "생성형 AI",
+    id: "arxiv-cl",
+    name: "arXiv Computation & Language",
+    url: "https://rss.arxiv.org/rss/cs.CL",
+    category: "LLMs & Research",
     enabled: true,
     type: "rss",
-    icon: "Sparkles"
+    lang: "en",
+    icon: "BookOpen"
   },
   {
     id: "openai-news",
     name: "OpenAI Newsroom",
     url: "https://openai.com/news/rss.xml",
-    category: "생성형 AI",
+    category: "Generative AI",
     enabled: true,
     type: "rss",
+    lang: "en",
     icon: "Bot"
+  },
+  {
+    id: "techcrunch-ai",
+    name: "TechCrunch AI",
+    url: "https://techcrunch.com/category/artificial-intelligence/feed/",
+    category: "Generative AI",
+    enabled: true,
+    type: "rss",
+    lang: "en",
+    icon: "Sparkles"
   },
   {
     id: "huggingface-blog",
     name: "Hugging Face Blog",
     url: "https://huggingface.co/blog/feed.xml",
-    category: "오픈소스",
+    category: "Open Source",
     enabled: true,
     type: "rss",
+    lang: "en",
     icon: "Smile"
   },
   {
-    id: "tomshardware-chips",
-    name: "Tom's Hardware (반도체/칩)",
-    url: "https://www.tomshardware.com/feeds/all",
-    category: "반도체 & 칩",
+    id: "the-verge",
+    name: "The Verge",
+    url: "https://www.theverge.com/rss/index.xml",
+    category: "Big Tech",
     enabled: true,
     type: "rss",
+    lang: "en",
+    icon: "Globe"
+  },
+  {
+    id: "ars-technica",
+    name: "Ars Technica",
+    url: "https://feeds.arstechnica.com/arstechnica/index",
+    category: "Big Tech",
+    enabled: true,
+    type: "rss",
+    lang: "en",
+    icon: "Layers"
+  },
+  {
+    id: "wired-business",
+    name: "Wired Business",
+    url: "https://www.wired.com/feed/category/business/latest/rss",
+    category: "Big Tech",
+    enabled: true,
+    type: "rss",
+    lang: "en",
+    icon: "Zap"
+  },
+  {
+    id: "tomshardware-chips",
+    name: "Tom's Hardware",
+    url: "https://www.tomshardware.com/feeds/all",
+    category: "Chips & Hardware",
+    enabled: true,
+    type: "rss",
+    lang: "en",
     icon: "Cpu"
   },
   {
     id: "the-hacker-news",
-    name: "The Hacker News (보안)",
+    name: "The Hacker News",
     url: "https://feeds.feedburner.com/TheHackersNews",
-    category: "사이버 보안",
+    category: "Cybersecurity",
     enabled: true,
     type: "rss",
+    lang: "en",
     icon: "ShieldAlert"
   },
   {
-    id: "hn-frontpage",
-    name: "Hacker News (인기 테크)",
-    url: "https://hnrss.org/frontpage",
-    category: "전체",
+    id: "aws-news",
+    name: "AWS Architecture & News",
+    url: "https://aws.amazon.com/blogs/aws/feed/",
+    category: "Cloud & DevOps",
     enabled: true,
     type: "rss",
+    lang: "en",
+    icon: "Cloud"
+  },
+  {
+    id: "github-blog",
+    name: "GitHub Engineering Blog",
+    url: "https://github.blog/feed/",
+    category: "Cloud & DevOps",
+    enabled: true,
+    type: "rss",
+    lang: "en",
+    icon: "GitBranch"
+  },
+  {
+    id: "hn-frontpage",
+    name: "Hacker News Frontpage",
+    url: "https://hnrss.org/frontpage",
+    category: "All",
+    enabled: true,
+    type: "rss",
+    lang: "en",
     icon: "Flame"
   }
 ];

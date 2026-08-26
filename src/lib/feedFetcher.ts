@@ -134,9 +134,32 @@ function sanitizeSnippet(text?: string): string {
 /**
  * Automatically assign or refine categories based on Korean & English keywords
  */
-function autoRefineCategory(title: string, snippet: string, defaultCat: Category): Category {
+function autoRefineCategory(title: string, snippet: string, defaultCat: Category, lang: "ko" | "en"): Category {
   const text = (title + " " + snippet).toLowerCase();
   
+  if (lang === "en") {
+    if (text.includes("llm") || text.includes("gpt") || text.includes("claude") || text.includes("gemini") || text.includes("diffusion") || text.includes("agent")) {
+      return "Generative AI";
+    }
+    if (text.includes("arxiv") || text.includes("paper") || text.includes("research") || text.includes("transformer") || text.includes("benchmark")) {
+      return "LLMs & Research";
+    }
+    if (text.includes("gpu") || text.includes("nvidia") || text.includes("semiconductor") || text.includes("intel") || text.includes("amd") || text.includes("tsmc")) {
+      return "Chips & Hardware";
+    }
+    if (text.includes("security") || text.includes("vulnerability") || text.includes("zero-day") || text.includes("ransomware") || text.includes("breach")) {
+      return "Cybersecurity";
+    }
+    if (text.includes("cloud") || text.includes("kubernetes") || text.includes("docker") || text.includes("aws") || text.includes("devops")) {
+      return "Cloud & DevOps";
+    }
+    if (text.includes("open source") || text.includes("open-source") || text.includes("github") || text.includes("hugging face")) {
+      return "Open Source";
+    }
+    return defaultCat;
+  }
+
+  // Korean Category Logic
   if (
     text.includes("llm") ||
     text.includes("gpt") ||
@@ -145,13 +168,9 @@ function autoRefineCategory(title: string, snippet: string, defaultCat: Category
     text.includes("gemini") ||
     text.includes("제미나이") ||
     text.includes("생성형") ||
-    text.includes("생성 ai") ||
-    text.includes("diffusion") ||
     text.includes("디퓨전") ||
     text.includes("genai") ||
-    text.includes("프롬프트") ||
-    text.includes("에이전트") ||
-    text.includes("agent")
+    text.includes("에이전트")
   ) {
     return "생성형 AI";
   }
@@ -162,11 +181,7 @@ function autoRefineCategory(title: string, snippet: string, defaultCat: Category
     text.includes("연구") ||
     text.includes("paper") ||
     text.includes("transformer") ||
-    text.includes("트랜스포머") ||
-    text.includes("벤치마크") ||
-    text.includes("파인튜닝") ||
-    text.includes("fine-tuning") ||
-    text.includes("강화학습")
+    text.includes("벤치마크")
   ) {
     return "LLM & 연구";
   }
@@ -176,16 +191,9 @@ function autoRefineCategory(title: string, snippet: string, defaultCat: Category
     text.includes("nvidia") ||
     text.includes("gpu") ||
     text.includes("반도체") ||
-    text.includes("npu") ||
-    text.includes("tpu") ||
-    text.includes("hbm") ||
     text.includes("tsmc") ||
     text.includes("인텔") ||
-    text.includes("intel") ||
-    text.includes("amd") ||
-    text.includes("하드웨어") ||
-    text.includes("블랙웰") ||
-    text.includes("blackwell")
+    text.includes("블랙웰")
   ) {
     return "반도체 & 칩";
   }
@@ -195,29 +203,18 @@ function autoRefineCategory(title: string, snippet: string, defaultCat: Category
     text.includes("취약점") ||
     text.includes("해킹") ||
     text.includes("랜섬웨어") ||
-    text.includes("cve-") ||
-    text.includes("악성코드") ||
     text.includes("security") ||
-    text.includes("vulnerability") ||
-    text.includes("zero-day") ||
-    text.includes("제로데이")
+    text.includes("zero-day")
   ) {
     return "사이버 보안";
   }
 
   if (
     text.includes("쿠버네티스") ||
-    text.includes("kubernetes") ||
     text.includes("도커") ||
-    text.includes("docker") ||
     text.includes("aws") ||
     text.includes("클라우드") ||
-    text.includes("cloud") ||
     text.includes("devops") ||
-    text.includes("데브옵스") ||
-    text.includes("ci/cd") ||
-    text.includes("database") ||
-    text.includes("db") ||
     text.includes("서버")
   ) {
     return "클라우드 & 개발";
@@ -227,10 +224,7 @@ function autoRefineCategory(title: string, snippet: string, defaultCat: Category
     text.includes("오픈소스") ||
     text.includes("open-source") ||
     text.includes("github") ||
-    text.includes("깃허브") ||
-    text.includes("hugging face") ||
-    text.includes("허깅페이스") ||
-    text.includes("라이선스")
+    text.includes("허깅페이스")
   ) {
     return "오픈소스";
   }
@@ -239,7 +233,7 @@ function autoRefineCategory(title: string, snippet: string, defaultCat: Category
 }
 
 /**
- * Extract topic tags in Korean/English
+ * Extract topic tags
  */
 function extractTags(title: string, snippet: string, category: Category): string[] {
   const text = (title + " " + snippet).toLowerCase();
@@ -269,6 +263,7 @@ async function fetchFeed(feed: FeedSource): Promise<NewsArticle[]> {
   try {
     const feedData = await parser.parseURL(feed.url);
     const articles: NewsArticle[] = [];
+    const lang = feed.lang || (feed.id.includes("kr") || feed.id.includes("tech-") ? "ko" : "en");
 
     for (const item of feedData.items || []) {
       if (!item.title || !item.link) continue;
@@ -295,11 +290,11 @@ async function fetchFeed(feed: FeedSource): Promise<NewsArticle[]> {
 
       const id = Buffer.from(item.link).toString("base64url").slice(0, 32);
 
-      const category = autoRefineCategory(title, snippet, feed.category);
+      const category = autoRefineCategory(title, snippet, feed.category, lang);
       const readTimeMinutes = estimateReadTime(snippet || title);
       const tags = extractTags(title, snippet, category);
 
-      // Pre-compute Korean AI summary
+      // Pre-compute AI summary
       const aiSummary = generateLocalSummary(title, snippet, category);
 
       articles.push({
@@ -311,13 +306,14 @@ async function fetchFeed(feed: FeedSource): Promise<NewsArticle[]> {
         pubDate,
         timestamp,
         category,
+        lang,
         contentSnippet: snippet.slice(0, 400),
         fullContent: snippet,
         author: rawItem.creator || rawItem.author || feed.name,
         imageUrl: imageUrl || undefined,
         readTimeMinutes,
         aiSummary,
-        likes: Math.floor(Math.random() * 15) + 3, // Initial organic reaction baseline
+        likes: Math.floor(Math.random() * 15) + 3,
         dislikes: Math.floor(Math.random() * 2),
         commentsCount: 0,
         tags
@@ -392,7 +388,7 @@ export async function syncAllFeeds(force = false): Promise<{
   );
 
   if (finalArticles.length > 0) {
-    inMemoryArticles = finalArticles.slice(0, 300);
+    inMemoryArticles = finalArticles.slice(0, 400);
     lastSyncTime = now;
     saveCachedArticles(inMemoryArticles);
   }
@@ -404,10 +400,11 @@ export async function syncAllFeeds(force = false): Promise<{
 }
 
 /**
- * Get filtered and paginated articles
+ * Get filtered and paginated articles with Language filtering support
  */
 export async function getNewsArticles(options?: {
   category?: Category;
+  lang?: "ko" | "en";
   search?: string;
   source?: string;
   sortBy?: "latest" | "popular" | "readTime";
@@ -420,7 +417,12 @@ export async function getNewsArticles(options?: {
 
   let filtered = [...inMemoryArticles];
 
-  if (options?.category && options.category !== "전체") {
+  // Language filter
+  if (options?.lang) {
+    filtered = filtered.filter(a => (a.lang || "ko") === options.lang);
+  }
+
+  if (options?.category && options.category !== "전체" && options.category !== "All") {
     filtered = filtered.filter(a => a.category === options.category);
   }
 

@@ -6,13 +6,22 @@ export type Category =
   | "사이버 보안"
   | "클라우드 & 개발"
   | "오픈소스"
-  | "빅테크 이슈";
+  | "빅테크 이슈"
+  // English Categories
+  | "All"
+  | "Generative AI"
+  | "LLMs & Research"
+  | "Chips & Hardware"
+  | "Cybersecurity"
+  | "Cloud & DevOps"
+  | "Open Source"
+  | "Big Tech";
 
 export interface AISummary {
   tldr: string[];
   whyItMatters: string;
-  impactScore: "매우 중요" | "높음" | "보통" | "일반";
-  sentiment: "긍정적" | "중립적" | "신중함" | "파괴적 혁신";
+  impactScore: "매우 중요" | "높음" | "보통" | "일반" | "Critical" | "High" | "Moderate" | "Low";
+  sentiment: "긍정적" | "중립적" | "신중함" | "파괴적 혁신" | "Positive" | "Neutral" | "Cautious" | "Disruptive";
   keyEntities: string[];
 }
 
@@ -41,6 +50,7 @@ export interface NewsArticle {
   pubDate: string; // ISO 8601 string
   timestamp: number; // epoch ms
   category: Category;
+  lang?: "ko" | "en";
   contentSnippet: string;
   fullContent?: string;
   author?: string;
@@ -64,6 +74,7 @@ export interface FeedSource {
   isCustom?: boolean;
   icon?: string;
   type: "rss" | "atom" | "json";
+  lang?: "ko" | "en";
   lastFetched?: string;
   status?: "ok" | "error" | "pending";
 }

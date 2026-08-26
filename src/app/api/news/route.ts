@@ -8,6 +8,7 @@ export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
     const category = searchParams.get("category") as Category | null;
+    const lang = searchParams.get("lang") as "ko" | "en" | null;
     const search = searchParams.get("search") || undefined;
     const source = searchParams.get("source") || undefined;
     const sortBy = searchParams.get("sortBy") as "latest" | "popular" | "readTime" | null;
@@ -15,7 +16,8 @@ export async function GET(request: NextRequest) {
     const offset = parseInt(searchParams.get("offset") || "0", 10);
 
     const result = await getNewsArticles({
-      category: category || "전체",
+      category: category || undefined,
+      lang: lang || undefined,
       search,
       source,
       sortBy: sortBy || "latest",
