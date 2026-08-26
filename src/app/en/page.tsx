@@ -541,6 +541,7 @@ export default function EnglishGlobalPage() {
         isOpen={isArticleModalOpen}
         onClose={handleCloseArticleModal}
         isBookmarked={selectedArticle ? isBookmarked(selectedArticle.id) : false}
+        locale="en"
         onToggleBookmark={toggleBookmark}
         isPlayingAudio={isPlaying}
         isPausedAudio={isPaused}
@@ -554,6 +555,7 @@ export default function EnglishGlobalPage() {
         isOpen={isBriefingOpen}
         onClose={() => setIsBriefingOpen(false)}
         articles={articles}
+        locale="en"
       />
 
       <FeedManagerModal
@@ -561,6 +563,7 @@ export default function EnglishGlobalPage() {
         onClose={() => setIsFeedManagerOpen(false)}
         onFeedsUpdated={fetchNews}
         refreshInterval={refreshInterval}
+        locale="en"
         onUpdateRefreshInterval={setRefreshInterval}
       />
 
@@ -568,6 +571,7 @@ export default function EnglishGlobalPage() {
         isOpen={isBookmarksOpen}
         onClose={() => setIsBookmarksOpen(false)}
         bookmarks={bookmarks}
+        locale="en"
         onSelectArticle={handleSelectArticle}
         onRemoveBookmark={toggleBookmark}
       />

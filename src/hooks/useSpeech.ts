@@ -5,22 +5,95 @@ export function useSpeech() {
   const [isPaused, setIsPaused] = useState<boolean>(false);
   const [currentText, setCurrentText] = useState<string>("");
   const [supported, setSupported] = useState<boolean>(false);
+  const [voices, setVoices] = useState<SpeechSynthesisVoice[]>([]);
 
   useEffect(() => {
     if (typeof window !== "undefined" && "speechSynthesis" in window) {
       setSupported(true);
+
+      const updateVoices = () => {
+        const availableVoices = window.speechSynthesis.getVoices();
+        setVoices(availableVoices);
+      };
+
+      updateVoices();
+      window.speechSynthesis.onvoiceschanged = updateVoices;
     }
   }, []);
 
-  const speak = useCallback((text: string) => {
+  /**
+   * Find the best native US English or Korean voice
+   */
+  const getBestVoice = useCallback((isEnglish: boolean): SpeechSynthesisVoice | null => {
+    if (voices.length === 0) return null;
+
+    if (isEnglish) {
+      // 1. Natural / Neural US Voices (Microsoft Natural, Google US, Apple Samantha)
+      const preferredUSVoices = [
+        "Microsoft Jenny Online (Natural) - English (United States)",
+        "Microsoft Guy Online (Natural) - English (United States)",
+        "Microsoft Aria Online (Natural) - English (United States)",
+        "Google US English",
+        "Samantha",
+        "Alex",
+        "Microsoft Zira - English (United States)",
+        "Microsoft David - English (United States)"
+      ];
+
+      for (const name of preferredUSVoices) {
+        const found = voices.find(v => v.name.toLowerCase().includes(name.toLowerCase()));
+        if (found) return found;
+      }
+
+      // 2. Any en-US voice
+      const usVoice = voices.find(v => v.lang === "en-US" || v.lang === "en_US");
+      if (usVoice) return usVoice;
+
+      // 3. Any English voice
+      const enVoice = voices.find(v => v.lang.startsWith("en"));
+      if (enVoice) return enVoice;
+    } else {
+      // Korean voices
+      const preferredKRVoices = [
+        "Google 한국의",
+        "Google 한국어",
+        "Microsoft Heami - Korean (Korean)",
+        "Microsoft SunHi Online (Natural) - Korean (Korea)",
+        "Yuna"
+      ];
+
+      for (const name of preferredKRVoices) {
+        const found = voices.find(v => v.name.toLowerCase().includes(name.toLowerCase()));
+        if (found) return found;
+      }
+
+      const krVoice = voices.find(v => v.lang === "ko-KR" || v.lang === "ko_KR" || v.lang.startsWith("ko"));
+      if (krVoice) return krVoice;
+    }
+
+    return null;
+  }, [voices]);
+
+  const speak = useCallback((text: string, lang?: "en" | "ko") => {
     if (typeof window === "undefined" || !("speechSynthesis" in window)) return;
 
-    window.speechSynthesis.cancel(); // cancel any active utterance
+    window.speechSynthesis.cancel(); // Cancel any active speech
 
     const cleanText = text.replace(/[*_#`]/g, " ").replace(/\s+/g, " ").trim();
+    if (!cleanText) return;
+
+    // Detect language: check if majority of characters are English/Latin or if specified
+    const isEnglish = lang === "en" || (!lang && !/[ㄱ-ㅎ|ㅏ-ㅣ|가-힣]/.test(cleanText));
+
     const utterance = new SpeechSynthesisUtterance(cleanText);
-    utterance.rate = 1.05;
+    utterance.lang = isEnglish ? "en-US" : "ko-KR";
+    utterance.rate = isEnglish ? 0.98 : 1.05; // natural native cadence
     utterance.pitch = 1.0;
+
+    const selectedVoice = getBestVoice(isEnglish);
+    if (selectedVoice) {
+      utterance.voice = selectedVoice;
+    }
 
     utterance.onstart = () => {
       setIsPlaying(true);
@@ -41,7 +114,7 @@ export function useSpeech() {
     };
 
     window.speechSynthesis.speak(utterance);
-  }, []);
+  }, [getBestVoice]);
 
   const pause = useCallback(() => {
     if (typeof window !== "undefined" && "speechSynthesis" in window) {

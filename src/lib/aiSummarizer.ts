@@ -1,10 +1,15 @@
 import { AISummary, NewsArticle } from "./types";
 
 /**
- * Intelligent local NLP summarizer (Korean Specialized):
- * Extracts core takeaways, impact score, and sentiment in Korean.
+ * Intelligent local NLP summarizer supporting both English and Korean:
+ * Extracts core takeaways, impact score, and sentiment accurately.
  */
-export function generateLocalSummary(title: string, content: string, category: string): AISummary {
+export function generateLocalSummary(
+  title: string,
+  content: string,
+  category: string,
+  lang: "ko" | "en" = "ko"
+): AISummary {
   const cleanContent = content
     .replace(/<[^>]*>?/gm, " ")
     .replace(/\s+/g, " ")
@@ -13,16 +18,138 @@ export function generateLocalSummary(title: string, content: string, category: s
   // Split into sentences
   const sentences = cleanContent
     .split(/(?<=[.?!])\s+/)
-    .filter(s => s.length > 15 && !s.includes("기자") && !s.includes("무단전재") && !s.includes("Copyright") && !s.includes("Read more"));
+    .filter(
+      s =>
+        s.length > 15 &&
+        !s.toLowerCase().includes("copyright") &&
+        !s.toLowerCase().includes("read more") &&
+        !s.toLowerCase().includes("subscribe") &&
+        !s.includes("기자") &&
+        !s.includes("무단전재")
+    );
 
+  // -------------------------------------------------------------
+  // 1. English Summary Logic
+  // -------------------------------------------------------------
+  if (lang === "en") {
+    let bullets: string[] = [];
+
+    if (sentences.length >= 3) {
+      bullets = [sentences[0], sentences[1], sentences[Math.min(2, sentences.length - 1)]];
+    } else if (sentences.length === 2) {
+      bullets = [
+        sentences[0],
+        sentences[1],
+        `Key technological breakthrough and architectural impact in the ${category} domain.`
+      ];
+    } else if (sentences.length === 1) {
+      bullets = [
+        sentences[0],
+        `Strategic breakdown and community takeaways regarding "${title}".`,
+        `Offers critical implications for software engineers, AI researchers, and tech leaders.`
+      ];
+    } else {
+      bullets = [
+        `Breaking coverage on: ${title}.`,
+        `Highlights current progress and engineering methodologies in ${category}.`,
+        `For full details and original context, refer to the source article link.`
+      ];
+    }
+
+    bullets = bullets.map(b => b.replace(/\s+/g, " ").trim());
+
+    // Impact Score (English)
+    let impactScore: AISummary["impactScore"] = "Moderate";
+    const lowerText = (title + " " + cleanContent).toLowerCase();
+
+    if (
+      lowerText.includes("breakthrough") ||
+      lowerText.includes("zero-day") ||
+      lowerText.includes("critical") ||
+      lowerText.includes("gpt-5") ||
+      lowerText.includes("blackwell") ||
+      lowerText.includes("agi") ||
+      lowerText.includes("acquisition") ||
+      lowerText.includes("billion")
+    ) {
+      impactScore = "Critical";
+    } else if (
+      lowerText.includes("launch") ||
+      lowerText.includes("release") ||
+      lowerText.includes("open-source") ||
+      lowerText.includes("benchmark") ||
+      lowerText.includes("vulnerability") ||
+      lowerText.includes("funding")
+    ) {
+      impactScore = "High";
+    } else if (
+      lowerText.includes("tip") ||
+      lowerText.includes("guide") ||
+      lowerText.includes("patch") ||
+      lowerText.includes("minor")
+    ) {
+      impactScore = "Low";
+    }
+
+    // Sentiment (English)
+    let sentiment: AISummary["sentiment"] = "Neutral";
+    if (
+      lowerText.includes("vulnerability") ||
+      lowerText.includes("breach") ||
+      lowerText.includes("hack") ||
+      lowerText.includes("risk") ||
+      lowerText.includes("warning") ||
+      lowerText.includes("lawsuit") ||
+      lowerText.includes("fine")
+    ) {
+      sentiment = "Cautious";
+    } else if (
+      lowerText.includes("breakthrough") ||
+      lowerText.includes("revolutionary") ||
+      lowerText.includes("sota") ||
+      lowerText.includes("game-changer") ||
+      lowerText.includes("disrupt")
+    ) {
+      sentiment = "Disruptive";
+    } else if (
+      lowerText.includes("surge") ||
+      lowerText.includes("growth") ||
+      lowerText.includes("success") ||
+      lowerText.includes("improved") ||
+      lowerText.includes("efficient")
+    ) {
+      sentiment = "Positive";
+    }
+
+    // Why It Matters (English)
+    let whyItMatters = `Directly influences technical workflows, system design, and competitive positioning across the ${category} ecosystem.`;
+    if (lowerText.includes("security") || lowerText.includes("vulnerability")) {
+      whyItMatters = "Requires immediate review of infrastructure configurations and dependency auditing to mitigate exposure.";
+    } else if (lowerText.includes("gpu") || lowerText.includes("nvidia") || lowerText.includes("chip")) {
+      whyItMatters = "Shifts hardware pricing and AI compute capacity limits for enterprise training clusters.";
+    } else if (lowerText.includes("model") || lowerText.includes("llm") || lowerText.includes("transformer")) {
+      whyItMatters = "Sets a new standard for reasoning efficiency and real-world multi-modal application deployment.";
+    }
+
+    // Key Entities
+    const entities = extractKeyEntities(title, cleanContent);
+
+    return {
+      tldr: bullets,
+      whyItMatters,
+      impactScore,
+      sentiment,
+      keyEntities: entities
+    };
+  }
+
+  // -------------------------------------------------------------
+  // 2. Korean Summary Logic (기존 한국어 최적화)
+  // -------------------------------------------------------------
   let bullets: string[] = [];
 
   if (sentences.length >= 3) {
-    bullets = [
-      sentences[0],
-      sentences[1],
-      sentences[Math.min(2, sentences.length - 1)]
-    ];
+    bullets = [sentences[0], sentences[1], sentences[Math.min(2, sentences.length - 1)]];
   } else if (sentences.length === 2) {
     bullets = [
       sentences[0],
@@ -45,7 +172,7 @@ export function generateLocalSummary(title: string, content: string, category: s
 
   bullets = bullets.map(b => b.replace(/\s+/g, " ").trim());
 
-  // Determine Impact Score
+  // Impact Score (Korean)
   let impactScore: AISummary["impactScore"] = "보통";
   const lowerText = (title + " " + cleanContent).toLowerCase();
 
@@ -83,7 +210,7 @@ export function generateLocalSummary(title: string, content: string, category: s
     impactScore = "일반";
   }
 
-  // Determine Sentiment
+  // Sentiment (Korean)
   let sentiment: AISummary["sentiment"] = "중립적";
   if (
     lowerText.includes("취약점") ||
@@ -98,154 +225,180 @@ export function generateLocalSummary(title: string, content: string, category: s
     sentiment = "신중함";
   } else if (
     lowerText.includes("혁신") ||
-    lowerText.includes("성능 향상") ||
-    lowerText.includes("돌파") ||
-    lowerText.includes("성공") ||
-    lowerText.includes("기록 경신") ||
-    lowerText.includes("faster") ||
-    lowerText.includes("milestone")
-  ) {
-    sentiment = "긍정적";
-  } else if (
-    lowerText.includes("패러다임") ||
-    lowerText.includes("생태계 변화") ||
-    lowerText.includes("disrupt") ||
-    lowerText.includes("대격변") ||
-    lowerText.includes("재편")
+    lowerText.includes("sota") ||
+    lowerText.includes("게임체인저") ||
+    lowerText.includes("파괴적")
   ) {
     sentiment = "파괴적 혁신";
+  } else if (
+    lowerText.includes("급증") ||
+    lowerText.includes("성장") ||
+    lowerText.includes("호재") ||
+    lowerText.includes("성공")
+  ) {
+    sentiment = "긍정적";
   }
 
-  // Extract key entities
-  const knownKeywords = [
-    "OpenAI", "Google", "DeepMind", "네이버", "카카오", "삼성전자", "SK하이닉스",
-    "Anthropic", "Meta", "NVIDIA", "엔비디아", "Microsoft", "마이크로소프트", "Apple",
-    "애플", "Claude", "ChatGPT", "Gemini", "Llama", "PyTorch", "Kubernetes", "쿠버네티스",
-    "Rust", "TypeScript", "Linux", "Docker", "Intel", "AMD", "TSMC", "Hugging Face"
-  ];
-  const keyEntities = knownKeywords.filter(k => 
-    new RegExp(`\\b${k}\\b`, "i").test(title + " " + cleanContent)
-  );
-
-  // Generate "Why It Matters" in Korean
-  let whyItMatters = "";
-  if (category === "생성형 AI" || category === "LLM & 연구") {
-    whyItMatters = "최신 파운데이션 모델의 추론 능력 및 AI 애플리케이션 개발 워크플로우에 직접적인 변화를 가져옵니다.";
-  } else if (category === "반도체 & 칩") {
-    whyItMatters = "차세대 AI 컴퓨팅 인프라 공급망과 전력 효율성 및 가속기 시장 판도에 중대한 영향을 미칩니다.";
-  } else if (category === "사이버 보안") {
-    whyItMatters = "엔터프라이즈 인프라 보호 및 시스템 보안 패치 대응을 위한 즉각적인 점검이 요구됩니다.";
-  } else if (category === "클라우드 & 개발" || category === "오픈소스") {
-    whyItMatters = "현업 개발 생산성 향상과 클라우드 네이티브 아키텍처의 현대화 방향성을 제시합니다.";
-  } else {
-    whyItMatters = "글로벌 IT 업계 트렌드와 디지털 혁신 전략 수립에 필수적인 시장 신호를 제공합니다.";
+  // Why It Matters (Korean)
+  let whyItMatters = `최신 파운데이션 모델의 추론 능력 및 AI 애플리케이션 개발 워크플로우에 직접적인 변화를 가져옵니다.`;
+  if (lowerText.includes("보안") || lowerText.includes("security")) {
+    whyItMatters = `사이버 위협 선제 대응 및 인프라 보안 수칙 강화를 위해 즉각적인 조치가 권장됩니다.`;
+  } else if (lowerText.includes("반도체") || lowerText.includes("gpu") || lowerText.includes("nvidia")) {
+    whyItMatters = `글로벌 하드웨어 공급망 및 차세대 AI 가속기 시장 점유율에 중대한 전환점을 시사합니다.`;
   }
+
+  const entities = extractKeyEntities(title, cleanContent);
 
   return {
-    tldr: bullets.slice(0, 3),
+    tldr: bullets,
     whyItMatters,
     impactScore,
     sentiment,
-    keyEntities: keyEntities.slice(0, 5)
+    keyEntities: entities
   };
 }
 
+function extractKeyEntities(title: string, content: string): string[] {
+  const text = title + " " + content;
+  const common = [
+    "OpenAI", "Anthropic", "Google", "DeepMind", "Microsoft", "NVIDIA", "Meta",
+    "Apple", "Mistral", "Hugging Face", "AWS", "GitHub", "TSMC", "Intel", "AMD",
+    "ChatGPT", "Claude", "Gemini", "LLaMA", "Python", "Rust", "TypeScript", "Kubernetes"
+  ];
+  return common.filter(e => new RegExp(`\\b${e}\\b`, "i").test(text)).slice(0, 5);
+}
+
 /**
- * Optional external LLM Summarizer using Gemini API if key is provided (Korean Output)
+ * Format daily briefing text for English and Korean
+ */
+export function formatDailyDigestText(articles: NewsArticle[], lang: "ko" | "en" = "ko"): string {
+  const dateStr = new Date().toLocaleDateString(lang === "en" ? "en-US" : "ko-KR", {
+    month: "long",
+    day: "numeric",
+    year: "numeric",
+  });
+
+  if (lang === "en") {
+    let body = `⚡ AI & IT Pulse - Daily Intelligence Briefing (${dateStr})\n`;
+    body += `━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n`;
+
+    articles.slice(0, 5).forEach((art, idx) => {
+      body += `[${idx + 1}] ${art.title}\n`;
+      body += `• Source: ${art.source} | Category: ${art.category} | Impact: ${art.aiSummary?.impactScore || "Moderate"}\n`;
+      if (art.aiSummary?.tldr) {
+        art.aiSummary.tldr.forEach(bullet => {
+          body += `  - ${bullet}\n`;
+        });
+      }
+      if (art.aiSummary?.whyItMatters) {
+        body += `  ★ Why It Matters: ${art.aiSummary.whyItMatters}\n`;
+      }
+      body += `• Link: ${art.link}\n\n`;
+    });
+
+    body += `━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n`;
+    body += `Curated automatically by AI & IT Pulse (Global Edition)\n`;
+    return body;
+  }
+
+  let body = `⚡ AI & IT 펄스 - 일일 테크 브리핑 (${dateStr})\n`;
+  body += `━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n`;
+
+  articles.slice(0, 5).forEach((art, idx) => {
+    body += `[${idx + 1}] ${art.title}\n`;
+    body += `• 출처: ${art.source} | 카테고리: ${art.category} | 영향도: ${art.aiSummary?.impactScore || "보통"}\n`;
+    if (art.aiSummary?.tldr) {
+      art.aiSummary.tldr.forEach(bullet => {
+        body += `  - ${bullet}\n`;
+      });
+    }
+    if (art.aiSummary?.whyItMatters) {
+      body += `  ★ 시사점: ${art.aiSummary.whyItMatters}\n`;
+    }
+    body += `• 링크: ${art.link}\n\n`;
+  });
+
+  body += `━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n`;
+  body += `발행: AI & IT 펄스 자동 큐레이션 시스템\n`;
+  return body;
+}
+
+export function generateDailyBriefingMarkdown(articles: NewsArticle[], lang: "ko" | "en" = "ko"): string {
+  return formatDailyDigestText(articles, lang);
+}
+
+/**
+ * Cloud LLM Deep Analysis via Gemini API
  */
 export async function generateGeminiSummary(
   title: string,
   content: string,
   category: string,
-  apiKey?: string
+  apiKey?: string,
+  lang: "ko" | "en" = "ko"
 ): Promise<AISummary> {
-  const effectiveKey = apiKey || process.env.GEMINI_API_KEY;
-  if (!effectiveKey) {
-    return generateLocalSummary(title, content, category);
+  const geminiKey = apiKey || process.env.GEMINI_API_KEY;
+
+  if (!geminiKey) {
+    return generateLocalSummary(title, content, category, lang);
   }
 
   try {
-    const prompt = `당신은 최고 수준의 AI & IT 전문 테크 애널리스트입니다. 다음 뉴스를 분석하고 전문적이고 명확한 한국어로 요약해 주세요:
-제목: "${title}"
-카테고리: "${category}"
-본문: "${content.slice(0, 2000)}"
+    const prompt = lang === "en"
+      ? `You are an elite AI & tech research analyst. Summarize this article in 3 high-impact bullet points and explain why it matters.
+Article Title: ${title}
+Category: ${category}
+Article Content: ${content.slice(0, 1500)}
 
-반드시 다음 JSON 형식으로만 응답해 주세요 (마크다운 없이 순수 JSON만 반환):
+Respond in valid JSON only with keys: "tldr" (array of 3 strings), "whyItMatters" (string), "impactScore" ("Critical"|"High"|"Moderate"|"Low"), "sentiment" ("Positive"|"Neutral"|"Cautious"|"Disruptive"), "keyEntities" (array of strings).`
+      : `당신은 최고 수준의 AI & 테크 전문 분석가입니다. 다음 기사의 핵심을 3줄로 요약하고 왜 중요한지 설명해주세요.
+기사 제목: ${title}
+카테고리: ${category}
+기사 본문: ${content.slice(0, 1500)}
+
+반드시 다음 JSON 형식으로만 응답하세요:
 {
-  "tldr": ["핵심 요약 1 (명확한 사실 중심)", "핵심 요약 2 (기술적 의미/파급효과)", "핵심 요약 3 (향후 전망 및 시사점)"],
-  "whyItMatters": "1~2문장의 핵심 중요성 및 업계 영향 분석 브리핑",
+  "tldr": ["요약1", "요약2", "요약3"],
+  "whyItMatters": "이 기사가 산업과 개발자에게 미치는 실질적 영향",
   "impactScore": "매우 중요" | "높음" | "보통" | "일반",
   "sentiment": "긍정적" | "중립적" | "신중함" | "파괴적 혁신",
-  "keyEntities": ["주요기업1", "기술명2", "기관3"]
+  "keyEntities": ["핵심키워드1", "핵심키워드2"]
 }`;
 
-    const res = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${effectiveKey}`,
-      {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          contents: [{ parts: [{ text: prompt }] }],
-          generationConfig: { responseMimeType: "application/json" }
-        })
-      }
-    );
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${geminiKey}`;
+    const response = await fetch(url, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        contents: [{ parts: [{ text: prompt }] }],
+        generationConfig: {
+          responseMimeType: "application/json",
+          temperature: 0.2,
+        },
+      }),
+    });
 
-    if (!res.ok) {
-      return generateLocalSummary(title, content, category);
+    if (!response.ok) {
+      return generateLocalSummary(title, content, category, lang);
     }
 
-    const data = await res.json();
-    const rawText = data?.candidates?.[0]?.content?.parts?.[0]?.text;
-    if (rawText) {
-      const parsed = JSON.parse(rawText);
-      return {
-        tldr: parsed.tldr || [],
-        whyItMatters: parsed.whyItMatters || "",
-        impactScore: parsed.impactScore || "보통",
-        sentiment: parsed.sentiment || "중립적",
-        keyEntities: parsed.keyEntities || []
-      };
+    const data = await response.json();
+    const rawJsonText = data.candidates?.[0]?.content?.parts?.[0]?.text;
+    if (!rawJsonText) {
+      return generateLocalSummary(title, content, category, lang);
     }
+
+    const parsed = JSON.parse(rawJsonText);
+    return {
+      tldr: Array.isArray(parsed.tldr) ? parsed.tldr : [title],
+      whyItMatters: parsed.whyItMatters || "",
+      impactScore: parsed.impactScore || (lang === "en" ? "Moderate" : "보통"),
+      sentiment: parsed.sentiment || (lang === "en" ? "Neutral" : "중립적"),
+      keyEntities: Array.isArray(parsed.keyEntities) ? parsed.keyEntities : [],
+    };
   } catch (err) {
-    console.warn("Error calling Gemini summary, using local fallback:", err);
+    console.error("Gemini API call failed, falling back to local NLP:", err);
+    return generateLocalSummary(title, content, category, lang);
   }
-
-  return generateLocalSummary(title, content, category);
 }
 
-/**
- * Generate a curated Daily AI & IT Briefing in Korean Markdown format
- */
-export function generateDailyBriefingMarkdown(articles: NewsArticle[]): string {
-  const dateStr = new Date().toLocaleDateString("ko-KR", {
-    year: "numeric",
-    month: "long",
-    day: "numeric",
-    weekday: "long"
-  });
-
-  const topArticles = articles.slice(0, 8);
-
-  let md = `# ⚡ AI & IT 일일 뉴스 브리핑 — ${dateStr}\n\n`;
-  md += `> **개요**: 국내외 주요 테크 미디어, AI 연구소 및 엔지니어링 블로그 실시간 종합 분석.\n\n---\n\n`;
-
-  topArticles.forEach((art, index) => {
-    md += `### ${index + 1}. [${art.title}](${art.link})\n`;
-    md += `**출처:** ${art.source} | **분류:** \`${art.category}\` | **영향도:** **${art.aiSummary?.impactScore || "보통"}**\n\n`;
-    if (art.aiSummary?.tldr && art.aiSummary.tldr.length > 0) {
-      art.aiSummary.tldr.forEach(b => {
-        md += `- ${b}\n`;
-      });
-    } else {
-      md += `- ${art.contentSnippet.slice(0, 200)}...\n`;
-    }
-    if (art.aiSummary?.whyItMatters) {
-      md += `\n💡 *왜 중요한가:* ${art.aiSummary.whyItMatters}\n`;
-    }
-    md += `\n---\n\n`;
-  });
-
-  md += `\n*AI & IT News Pulse 한국어 에디션 자동 생성.*`;
-  return md;
-}

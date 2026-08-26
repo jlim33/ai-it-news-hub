@@ -294,8 +294,8 @@ async function fetchFeed(feed: FeedSource): Promise<NewsArticle[]> {
       const readTimeMinutes = estimateReadTime(snippet || title);
       const tags = extractTags(title, snippet, category);
 
-      // Pre-compute AI summary
-      const aiSummary = generateLocalSummary(title, snippet, category);
+      // Pre-compute AI summary with language support
+      const aiSummary = generateLocalSummary(title, snippet, category, lang);
 
       articles.push({
         id,
