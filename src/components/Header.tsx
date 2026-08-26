@@ -127,6 +127,16 @@ export function Header({
               <span className="hidden sm:inline">{isSyncing ? "수집 중..." : "새로고침"}</span>
             </button>
 
+            {/* Language Switcher */}
+            <a
+              href="/en"
+              className="hidden lg:flex items-center gap-1.5 px-3 py-1.5 rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 hover:bg-slate-100 text-slate-700 dark:text-slate-300 text-xs font-semibold shadow-xs transition-all"
+              title="영문 에디션 보기 (English Global Edition)"
+            >
+              <Languages className="w-3.5 h-3.5 text-indigo-500" />
+              <span>🇺🇸 English</span>
+            </a>
+
             {/* Daily Briefing Generator */}
             <button
               onClick={onOpenBriefing}
