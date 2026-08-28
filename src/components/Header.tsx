@@ -12,6 +12,7 @@ import {
   Languages
 } from "lucide-react";
 import { ThemeToggle } from "./ThemeToggle";
+import { AmbientSoundPlayer } from "./AmbientSoundPlayer";
 
 interface HeaderProps {
   searchQuery: string;
@@ -137,6 +138,9 @@ export function Header({
               <Languages className="w-3.5 h-3.5 text-indigo-500" />
               <span>🇺🇸 English</span>
             </a>
+
+            {/* Continuous Audio Lounge */}
+            <AmbientSoundPlayer />
 
             {/* Daily Briefing Generator */}
             <button
