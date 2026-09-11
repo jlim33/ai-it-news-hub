@@ -2,7 +2,7 @@ export interface AudioTrack {
   id: string;
   title: string;
   artist: string;
-  category: "lofi" | "classical" | "meditation" | "nature";
+  category: "classical" | "lofi" | "meditation" | "nature";
   categoryLabel: string;
   src: string;
   duration?: string;
@@ -11,31 +11,49 @@ export interface AudioTrack {
 
 export const AI_AUDIO_TRACKS: AudioTrack[] = [
   {
-    id: "ai-coding-lofi",
-    title: "Chopin - Nocturne in E-flat major, Op. 9 No. 2",
-    artist: "Cyber Piano Chillout",
+    id: "classic-canon",
+    title: "Pachelbel - Canon in D major (파헬벨 캐논 변주곡)",
+    artist: "Classic Best Masterpiece",
+    category: "classical",
+    categoryLabel: "클래식 명작 🎻",
+    src: "/audio/classic-best/01-pachelbel-canon.mp3",
+    duration: "6:23",
+  },
+  {
+    id: "classic-fur-elise",
+    title: "Beethoven - Für Elise (베토벤 엘리제를 위하여)",
+    artist: "Classic Best Masterpiece",
     category: "classical",
     categoryLabel: "클래식 피아노 🎹",
-    src: "https://cdn.pixabay.com/download/audio/2022/05/16/audio_db6591201e.mp3?filename=chopin-nocturne-op-9-no-2-110829.mp3",
-    duration: "4:32",
+    src: "/audio/classic-best/02-beethoven-fur-elise.mp3",
+    duration: "3:49",
   },
   {
-    id: "ai-paris-chanson",
-    title: "Breeze of Paris (Acoustic Chanson Cafe)",
-    artist: "Silicon Valley Cafe Lounge",
-    category: "lofi",
-    categoryLabel: "파리지앵 샹송 ☕",
-    src: "https://cdn.pixabay.com/download/audio/2022/10/14/audio_9939f792cb.mp3?filename=french-accordion-chanson-122941.mp3",
-    duration: "3:10",
-  },
-  {
-    id: "ai-bach-chamber",
-    title: "Bach - Air on the G String",
-    artist: "Chamber Strings Orchestra",
+    id: "classic-winter",
+    title: "Vivaldi - Four Seasons 'Winter' 1st Mvt (비발디 사계 '겨울' 1악장)",
+    artist: "Classic Best Masterpiece",
     category: "classical",
     categoryLabel: "클래식 현악 🎻",
-    src: "https://cdn.pixabay.com/download/audio/2022/03/24/audio_341bbec7bb.mp3?filename=bach-air-on-the-g-string-orchestral-suite-no-3-in-d-major-bwv-1068-105151.mp3",
-    duration: "4:15",
+    src: "/audio/classic-best/03-vivaldi-winter-1st.mp3",
+    duration: "3:44",
+  },
+  {
+    id: "classic-liebesfreud",
+    title: "Kreisler - Liebesfreud (크라이슬러 사랑의 기쁨)",
+    artist: "Classic Best Masterpiece",
+    category: "classical",
+    categoryLabel: "클래식 바이올린 🎻",
+    src: "/audio/classic-best/04-kreisler-liebesfreud.mp3",
+    duration: "3:32",
+  },
+  {
+    id: "classic-thais",
+    title: "Massenet - Méditation from Thaïs (마스네 타이스의 명상곡)",
+    artist: "Classic Best Masterpiece",
+    category: "classical",
+    categoryLabel: "클래식 명상 🎻",
+    src: "/audio/classic-best/05-massenet-meditation-thais.mp3",
+    duration: "5:01",
   },
   {
     id: "ai-528hz-deepwork",
@@ -63,5 +81,5 @@ export const AI_AUDIO_TRACKS: AudioTrack[] = [
     categoryLabel: "온화한 파도소리 🌊",
     src: "https://cdn.pixabay.com/download/audio/2021/09/06/audio_82315b9468.mp3?filename=ocean-waves-ambient-8247.mp3",
     duration: "5:30",
-  }
+  },
 ];
