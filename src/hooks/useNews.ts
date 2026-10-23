@@ -17,7 +17,7 @@ export function useNews(initialCategory: Category = "전체") {
   const syncIntervalRef = useRef<NodeJS.Timeout | null>(null);
   const countdownRef = useRef<NodeJS.Timeout | null>(null);
 
-  // Fetch articles from API
+  // Fetch articles from API or static json fallback
   const fetchArticles = useCallback(async (cat: Category, search: string, sort: string) => {
     try {
       setLoading(true);
@@ -28,13 +28,51 @@ export function useNews(initialCategory: Category = "전체") {
       params.append("sortBy", sort);
       params.append("limit", "100");
 
-      const res = await fetch(`/api/news?${params.toString()}`);
-      if (!res.ok) throw new Error("Failed to fetch news feed");
-      
-      const data = await res.json();
-      setArticles(data.articles || []);
-      if (data.updatedAt) {
-        setLastSynced(new Date(data.updatedAt));
+      let data: any = null;
+      try {
+        const res = await fetch(`/api/news?${params.toString()}`);
+        if (res.ok) {
+          data = await res.json();
+        }
+      } catch (e) {
+        // Fallback for static export
+      }
+
+      if (!data || !data.articles || data.articles.length === 0) {
+        // Try static fallback data (for GitHub Pages static export)
+        const basePath = typeof window !== "undefined" && window.location.pathname.startsWith("/ai-it-news-hub") ? "/ai-it-news-hub" : "";
+        const fallbackRes = await fetch(`${basePath}/data/news.json`).catch(() => null);
+        if (fallbackRes && fallbackRes.ok) {
+          const fallbackData = await fallbackRes.json();
+          let filtered = fallbackData.articles || [];
+          if (cat !== "전체") {
+            filtered = filtered.filter((a: any) => a.category === cat);
+          }
+          if (search) {
+            const q = search.toLowerCase();
+            filtered = filtered.filter((a: any) =>
+              a.title?.toLowerCase().includes(q) ||
+              a.snippet?.toLowerCase().includes(q)
+            );
+          }
+          if (sort === "popular") {
+            filtered = [...filtered].sort((a: any, b: any) => (b.likes || 0) - (a.likes || 0));
+          } else if (sort === "readTime") {
+            filtered = [...filtered].sort((a: any, b: any) => (a.readTime || 1) - (b.readTime || 1));
+          } else {
+            filtered = [...filtered].sort((a: any, b: any) => new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime());
+          }
+          data = { articles: filtered, updatedAt: fallbackData.updatedAt || new Date().toISOString() };
+        }
+      }
+
+      if (data && data.articles) {
+        setArticles(data.articles);
+        if (data.updatedAt) {
+          setLastSynced(new Date(data.updatedAt));
+        }
+      } else {
+        throw new Error("Failed to fetch news feed");
       }
     } catch (err: any) {
       setError(err.message || "An error occurred while fetching news");

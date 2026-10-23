@@ -85,17 +85,56 @@ export default function EnglishGlobalPage() {
       setLoading(true);
       setError(null);
       const params = new URLSearchParams();
-      params.append("lang", "en"); // Fetch ONLY English global feeds
+      params.append("lang", "en");
       if (category !== "All" && category !== "전체") params.append("category", category);
       if (searchQuery) params.append("search", searchQuery);
       params.append("sortBy", sortBy);
       params.append("limit", "100");
 
-      const res = await fetch(`/api/news?${params.toString()}`);
-      if (!res.ok) throw new Error("Failed to fetch news feed");
-      const data = await res.json();
-      setArticles(data.articles || []);
-      if (data.updatedAt) setLastSynced(new Date(data.updatedAt));
+      let data: any = null;
+      try {
+        const res = await fetch(`/api/news?${params.toString()}`);
+        if (res.ok) {
+          data = await res.json();
+        }
+      } catch (e) {
+        // Fallback for static export
+      }
+
+      if (!data || !data.articles || data.articles.length === 0) {
+        const basePath = typeof window !== "undefined" && window.location.pathname.startsWith("/ai-it-news-hub") ? "/ai-it-news-hub" : "";
+        const fallbackRes = await fetch(`${basePath}/data/news.json`).catch(() => null);
+        if (fallbackRes && fallbackRes.ok) {
+          const fallbackData = await fallbackRes.json();
+          let filtered = (fallbackData.articles || []).filter((a: any) => a.lang === "en" || !a.lang);
+          if (filtered.length === 0) filtered = fallbackData.articles || [];
+          if (category !== "All" && category !== "전체") {
+            filtered = filtered.filter((a: any) => a.category === category);
+          }
+          if (searchQuery) {
+            const q = searchQuery.toLowerCase();
+            filtered = filtered.filter((a: any) =>
+              a.title?.toLowerCase().includes(q) ||
+              a.snippet?.toLowerCase().includes(q)
+            );
+          }
+          if (sortBy === "popular") {
+            filtered = [...filtered].sort((a: any, b: any) => (b.likes || 0) - (a.likes || 0));
+          } else if (sortBy === "readTime") {
+            filtered = [...filtered].sort((a: any, b: any) => (a.readTime || 1) - (b.readTime || 1));
+          } else {
+            filtered = [...filtered].sort((a: any, b: any) => new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime());
+          }
+          data = { articles: filtered, updatedAt: fallbackData.updatedAt || new Date().toISOString() };
+        }
+      }
+
+      if (data && data.articles) {
+        setArticles(data.articles);
+        if (data.updatedAt) setLastSynced(new Date(data.updatedAt));
+      } else {
+        throw new Error("Failed to load news");
+      }
     } catch (err: any) {
       setError(err.message || "Failed to load news");
     } finally {
